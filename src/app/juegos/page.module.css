@@ -63,6 +63,10 @@
   background: linear-gradient(90deg, #8b5cf6, #06b6d4);
 }
 
+.gameCardCyan::before {
+  background: linear-gradient(90deg, #06b6d4, #22d3ee);
+}
+
 .gameCard:hover {
   transform: translateY(-5px);
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
@@ -75,6 +79,10 @@
 
 .gameCardPurple:hover {
   border-color: #8b5cf6;
+}
+
+.gameCardCyan:hover {
+  border-color: #06b6d4;
 }
 
 .gameIcon {
@@ -133,6 +141,11 @@
 .gameCardPurple .playBadge {
   background: linear-gradient(135deg, #8b5cf6, #06b6d4);
   color: #fff;
+}
+
+.gameCardCyan .playBadge {
+  background: linear-gradient(135deg, #06b6d4, #22d3ee);
+  color: #00222a;
 }
 
 .gameCard:hover .playBadge {

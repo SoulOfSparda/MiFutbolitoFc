@@ -12,6 +12,7 @@ Este proyecto extrae información en tiempo real desde [TheSportsDB](https://www
 - **Zona de Minijuegos Gamificada 🎮**: 
   - *Maestro de Champions*: Trivia histórica con ranking de puntaje basado en rachas.
   - *Adivina el Escudo*: Desafío contra reloj tipo silueta usando filtros avanzados para adivinar el club.
+  - *Adivina el Jugador por Pistas*: Reto de deducción con pistas progresivas (posición, nacionalidad, club y más), donde usar menos pistas da más puntos.
 - **Detalle de Equipos**: Descripciones dinámicas en español, escudos, uniformes e información de fundación.
 - **Biografía de Jugadores**: Fotografía, dorsal, equipo y detalles físicos de los jugadores de cada equipo.
 - **Horarios Locales**: El código lee automáticamente la zona horaria de tu computadora para que los partidos se muestren en tu hora local.
