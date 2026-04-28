@@ -32,6 +32,8 @@ function hasUsablePhoto(value) {
 
 function isCoachProfile(player) {
   const position = (player?.strPosition || '').toLowerCase();
+  const status = (player?.strStatus || '').toLowerCase();
+  const description = (player?.strDescriptionEN || '').toLowerCase();
   const name = (player?.strPlayer || '').toLowerCase();
   return (
     position.includes('manager') ||
@@ -40,6 +42,12 @@ function isCoachProfile(player) {
     position.includes('trainer') ||
     position.includes('director') ||
     position.includes('staff') ||
+    status.includes('manager') ||
+    status.includes('coach') ||
+    description.includes('head coach') ||
+    description.includes('assistant coach') ||
+    description.includes('football manager') ||
+    description.includes('manager of') ||
     name.includes(' coach') ||
     name.startsWith('coach ')
   );
@@ -102,6 +110,8 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
           strTeam: (player?.strTeam || '').trim(),
           strNationality: (player?.strNationality || '').trim(),
           strPosition: (player?.strPosition || '').trim(),
+          strStatus: (player?.strStatus || '').trim(),
+          strDescriptionEN: (player?.strDescriptionEN || '').trim(),
           strNumber: (player?.strNumber || '').trim(),
           strHeight: (player?.strHeight || '').trim(),
           strWeight: (player?.strWeight || '').trim(),
@@ -129,7 +139,7 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
       MAX_ROUNDS,
       Math.max(MIN_ROUNDS, Math.floor(validPlayers.length * 0.82))
     );
-    const openingPlayerRounds = playerProfiles.length > 0 ? Math.min(35, maxRounds) : 0;
+    const openingPlayerRounds = playerProfiles.length > 0 ? Math.min(40, maxRounds) : 0;
     const gameRounds = [];
     const usedPlayerIds = new Set();
     const usedCoachIds = new Set();
@@ -161,7 +171,7 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
       const fullWrongPool = validPlayers.filter((player) => player.idPlayer !== correctPlayer.idPlayer);
       const strictWrongPool =
         i < openingPlayerRounds
-          ? fullWrongPool.filter((player) => !player.isCoach && isLikelyFieldPlayer(player))
+          ? fullWrongPool.filter((player) => playerProfiles.some((p) => p.idPlayer === player.idPlayer))
           : [];
       const earlyPlayerWrongPool =
         i < openingPlayerRounds && !correctPlayer.isCoach

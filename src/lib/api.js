@@ -156,6 +156,8 @@ function normalizeGamePlayer(player) {
     strTeam: player?.strTeam || '',
     strNationality: player?.strNationality || '',
     strPosition: player?.strPosition || '',
+    strStatus: player?.strStatus || '',
+    strDescriptionEN: player?.strDescriptionEN || '',
     dateBorn: player?.dateBorn || '',
     strNumber: player?.strNumber || '',
     strHeight: player?.strHeight || '',
