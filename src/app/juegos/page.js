@@ -4,6 +4,7 @@ import {
   getWorldCupPlayers,
   getWorldCupTeams,
 } from '@/lib/api';
+import { connection } from 'next/server';
 import GamesClient from './GamesClient';
 import styles from './page.module.css';
 
@@ -56,6 +57,8 @@ async function getChampionsPlayers(teams) {
 }
 
 export default async function JuegosPage() {
+  await connection();
+
   const [championsTeams, worldCupTeams] = await Promise.all([
     getTeamsByLeague('UEFA Champions League').catch(() => []),
     getWorldCupTeams().catch(() => []),
@@ -67,6 +70,7 @@ export default async function JuegosPage() {
     getWorldCupPlayers(worldCupTeams, {
       requireMinimumClues: false,
       includeNameHints: true,
+      maxNameHints: 24,
       limit: 600,
     }).catch(() => []),
   ]);

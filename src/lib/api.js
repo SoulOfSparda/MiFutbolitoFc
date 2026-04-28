@@ -234,11 +234,14 @@ function mergeWorldCupPlayers(apiPlayers, fallbackPlayers, requireMinimumClues =
   return Array.from(merged.values());
 }
 
-async function getPlayersByNameHints(hints = []) {
+async function getPlayersByNameHints(hints = [], options = {}) {
   if (!Array.isArray(hints) || hints.length === 0) return [];
+  const maxHints = Math.max(0, options.maxHints ?? hints.length);
+  const selectedHints = hints.slice(0, maxHints);
+  if (selectedHints.length === 0) return [];
 
   const playersByName = await Promise.all(
-    hints.map((name) =>
+    selectedHints.map((name) =>
       fetchAPI(`searchplayers.php?p=${encodeURIComponent(name)}`)
         .then((data) => data?.player || [])
         .catch(() => [])
@@ -274,6 +277,7 @@ export async function getWorldCupPlayers(teams = [], options = {}) {
   const requireMinimumClues = options.requireMinimumClues ?? true;
   const limit = options.limit ?? 220;
   const includeNameHints = options.includeNameHints ?? false;
+  const maxNameHints = options.maxNameHints ?? 24;
   const numericTeamIds = teams
     .map((team) => String(team?.idTeam || ''))
     .filter((idTeam) => /^\d+$/.test(idTeam))
@@ -283,7 +287,7 @@ export async function getWorldCupPlayers(teams = [], options = {}) {
     numericTeamIds.map((idTeam) => getTeamPlayers(idTeam).catch(() => []))
   );
   const hintPlayers = includeNameHints
-    ? await getPlayersByNameHints(WORLD_CUP_PLAYER_SEARCH_HINTS)
+    ? await getPlayersByNameHints(WORLD_CUP_PLAYER_SEARCH_HINTS, { maxHints: maxNameHints })
     : [];
 
   const apiPlayers = [...playersByTeam.flat(), ...hintPlayers]
