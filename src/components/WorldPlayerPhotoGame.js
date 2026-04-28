@@ -119,10 +119,9 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
     const strictPlayerProfiles = validPlayers.filter(
       (profile) => !profile.isCoach && isLikelyFieldPlayer(profile)
     );
+    const fallbackPlayerProfiles = validPlayers.filter((profile) => !profile.isCoach);
     const playerProfiles =
-      strictPlayerProfiles.length >= 12
-        ? strictPlayerProfiles
-        : validPlayers.filter((profile) => !profile.isCoach);
+      strictPlayerProfiles.length >= 4 ? strictPlayerProfiles : fallbackPlayerProfiles;
     const coachProfiles = validPlayers.filter((profile) => profile.isCoach);
     const hasMixedProfiles = playerProfiles.length > 0 && coachProfiles.length > 0;
 
@@ -130,7 +129,7 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
       MAX_ROUNDS,
       Math.max(MIN_ROUNDS, Math.floor(validPlayers.length * 0.82))
     );
-    const openingPlayerRounds = playerProfiles.length > 0 ? Math.min(28, maxRounds) : 0;
+    const openingPlayerRounds = playerProfiles.length > 0 ? Math.min(35, maxRounds) : 0;
     const gameRounds = [];
     const usedPlayerIds = new Set();
     const usedCoachIds = new Set();
@@ -145,7 +144,7 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
         sourcePool = playerProfiles;
         usedSet = usedPlayerIds;
       } else if (hasMixedProfiles) {
-        const prefersPlayer = i < 35 ? Math.random() < 0.8 : Math.random() < 0.66;
+        const prefersPlayer = i < 40 ? Math.random() < 0.84 : Math.random() < 0.7;
         sourcePool = prefersPlayer ? playerProfiles : coachProfiles;
         usedSet = prefersPlayer ? usedPlayerIds : usedCoachIds;
       }
@@ -160,6 +159,10 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
       usedSet.add(correctPlayer.idPlayer);
 
       const fullWrongPool = validPlayers.filter((player) => player.idPlayer !== correctPlayer.idPlayer);
+      const strictWrongPool =
+        i < openingPlayerRounds
+          ? fullWrongPool.filter((player) => !player.isCoach && isLikelyFieldPlayer(player))
+          : [];
       const earlyPlayerWrongPool =
         i < openingPlayerRounds && !correctPlayer.isCoach
           ? fullWrongPool.filter((player) => !player.isCoach)
@@ -167,14 +170,21 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
       const preferredWrongPool = fullWrongPool.filter(
         (player) => !recentOptionIds.has(player.idPlayer)
       );
+      const preferredStrictWrongPool = strictWrongPool.filter(
+        (player) => !recentOptionIds.has(player.idPlayer)
+      );
       const preferredEarlyWrongPool = earlyPlayerWrongPool.filter(
         (player) => !recentOptionIds.has(player.idPlayer)
       );
       const wrongSource =
-        preferredEarlyWrongPool.length >= 3
+        preferredStrictWrongPool.length >= 3
+          ? preferredStrictWrongPool
+          : preferredEarlyWrongPool.length >= 3
           ? preferredEarlyWrongPool
           : preferredWrongPool.length >= 3
           ? preferredWrongPool
+          : strictWrongPool.length >= 3
+          ? strictWrongPool
           : earlyPlayerWrongPool.length >= 3
           ? earlyPlayerWrongPool
           : fullWrongPool;
