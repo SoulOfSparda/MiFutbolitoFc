@@ -1,24 +1,21 @@
-import { getTeamPlayers, getTeamsByLeague } from '@/lib/api';
+import {
+  getTeamPlayers,
+  getTeamsByLeague,
+  getWorldCupPlayers,
+  getWorldCupTeams,
+} from '@/lib/api';
 import GamesClient from './GamesClient';
 import styles from './page.module.css';
 
 export const metadata = {
   title: 'Juegos — MiFutbolitoFc',
   description:
-    'Pon a prueba tus conocimientos de fútbol con nuestra trivia de Champions, adivina escudos y el nuevo juego de pistas de jugadores.',
+    'Juega en modo Champions o Mundial 2026 con trivia, escudos, banderas, sprint verdadero/falso, foto de jugadores y reto por pistas.',
 };
 
-export default async function JuegosPage() {
-  // Cargamos los equipos de Champions para el juego de escudos
-  const teams = await getTeamsByLeague('UEFA Champions League').catch(() => []);
-  const playerSourceTeams = teams.filter((team) => team.idTeam).slice(0, 8);
-
-  const playersNested = await Promise.all(
-    playerSourceTeams.map((team) => getTeamPlayers(team.idTeam).catch(() => []))
-  );
-
+function normalizePlayersPool(playersNested) {
   const seenPlayers = new Set();
-  const players = playersNested
+  return playersNested
     .flat()
     .filter((player) => {
       if (!player?.idPlayer || !player?.strPlayer || seenPlayers.has(player.idPlayer)) {
@@ -48,6 +45,43 @@ export default async function JuegosPage() {
       strThumb: player.strThumb || player.strCutout || '',
     }))
     .slice(0, 160);
+}
+
+async function getChampionsPlayers(teams) {
+  const playerSourceTeams = teams.filter((team) => team.idTeam).slice(0, 8);
+  const playersNested = await Promise.all(
+    playerSourceTeams.map((team) => getTeamPlayers(team.idTeam).catch(() => []))
+  );
+  return normalizePlayersPool(playersNested);
+}
+
+export default async function JuegosPage() {
+  const [championsTeams, worldCupTeams] = await Promise.all([
+    getTeamsByLeague('UEFA Champions League').catch(() => []),
+    getWorldCupTeams().catch(() => []),
+  ]);
+
+  const [championsPlayers, worldCupPlayers, worldCupPhotoPlayers] = await Promise.all([
+    getChampionsPlayers(championsTeams).catch(() => []),
+    getWorldCupPlayers(worldCupTeams, { requireMinimumClues: true, limit: 260 }).catch(() => []),
+    getWorldCupPlayers(worldCupTeams, {
+      requireMinimumClues: false,
+      includeNameHints: true,
+      limit: 600,
+    }).catch(() => []),
+  ]);
+
+  const datasets = {
+    champions: {
+      teams: championsTeams,
+      players: championsPlayers,
+    },
+    'world-cup': {
+      teams: worldCupTeams,
+      players: worldCupPlayers,
+      photoPlayers: worldCupPhotoPlayers,
+    },
+  };
 
   return (
     <div className={styles.page}>
@@ -55,12 +89,12 @@ export default async function JuegosPage() {
         <div className="container">
           <h1 className={`${styles.title} animate-in`}>🎮 Zona de Juegos</h1>
           <p className={`${styles.subtitle} animate-in animate-in-delay-1`}>
-            Diviértete con trivia, escudos y el nuevo reto de jugadores por pistas
+            Elige entre modo Champions y modo Mundial 2026 para retar tu conocimiento futbolero
           </p>
         </div>
       </section>
 
-      <GamesClient teams={teams} players={players} />
+      <GamesClient datasets={datasets} />
     </div>
   );
 }

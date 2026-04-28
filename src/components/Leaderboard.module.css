@@ -129,6 +129,7 @@
 .playerCol { width: 100%; }
 .scoreCol { font-weight: 900; color: var(--accent-primary) !important; text-align: center; }
 .timeCol { text-align: center; opacity: 0.8; }
+.statsCol { white-space: nowrap; font-size: 0.82rem; color: var(--text-muted); }
 
 @media (max-width: 500px) {
   .inputGroup { flex-direction: column; }

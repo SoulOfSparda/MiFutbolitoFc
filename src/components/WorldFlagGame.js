@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Leaderboard from './Leaderboard';
 import { getGameMode, getModeLeaderboardId } from '@/lib/data/gameModes';
@@ -15,78 +15,105 @@ function shuffle(arr) {
   return copy;
 }
 
-export default function BadgeGame({ teams, mode = 'champions' }) {
+function hasUsableFlag(value) {
+  const normalized = (value || '').trim();
+  if (!normalized) return false;
+  const lower = normalized.toLowerCase();
+  return lower !== 'null' && lower !== 'undefined' && lower !== 'n/a';
+}
+
+function getRankLabel(pct) {
+  if (pct >= 90) return '🌟 Maestro de Banderas';
+  if (pct >= 70) return '🏆 Experto Mundial';
+  if (pct >= 50) return '🥈 Buen Aficionado';
+  return '🥉 En entrenamiento';
+}
+
+export default function WorldFlagGame({ teams, mode = 'world-cup' }) {
   const [gameState, setGameState] = useState('idle');
   const [rounds, setRounds] = useState([]);
   const [currentR, setCurrentR] = useState(0);
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState(null);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [revealed, setRevealed] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [timer, setTimer] = useState(10);
+  const [finalTime, setFinalTime] = useState(0);
 
   const totalTimeSpent = useRef(0);
-  const [finalTime, setFinalTime] = useState(0);
   const modeConfig = getGameMode(mode);
-  const gameId = getModeLeaderboardId('badge', mode);
-  const challengeLabel = mode === 'world-cup' ? 'selección' : 'equipo';
+  const worldCupConfig = getGameMode('world-cup');
+  const gameMeta = modeConfig.games.worldFlag || worldCupConfig.games.worldFlag;
+  const gameId = getModeLeaderboardId('world-flag', mode);
 
-  // Generar rondas de juego
+  const validTeams = useMemo(() => {
+    const source = Array.isArray(teams) ? teams : [];
+    const uniqueById = new Map();
+
+    source.forEach((team) => {
+      const idTeam = String(team?.idTeam || '').trim();
+      const strTeam = (team?.strTeam || '').trim();
+      const strCountryFlag = (team?.strCountryFlag || '').trim();
+      if (!idTeam || !strTeam || !hasUsableFlag(strCountryFlag)) return;
+      if (!uniqueById.has(idTeam)) {
+        uniqueById.set(idTeam, { idTeam, strTeam, strCountryFlag });
+      }
+    });
+
+    return Array.from(uniqueById.values());
+  }, [teams]);
+
   const generateRounds = useCallback(() => {
-    const validTeams = teams.filter((t) => t.strBadge);
     if (validTeams.length < 4) return [];
 
-    const shuffled = shuffle(validTeams);
+    const maxRounds = Math.min(10, validTeams.length);
+    const shuffledTeams = shuffle(validTeams);
     const gameRounds = [];
 
-    for (let i = 0; i < Math.min(10, Math.floor(validTeams.length / 4)); i++) {
-      const correctIdx = i * 4;
-      const correctTeam = shuffled[correctIdx];
+    for (let i = 0; i < maxRounds; i++) {
+      const correctTeam = shuffledTeams[i];
       const wrongTeams = shuffle(
-        shuffled.filter((t) => t.idTeam !== correctTeam.idTeam)
+        validTeams.filter((team) => team.idTeam !== correctTeam.idTeam)
       ).slice(0, 3);
-      const options = shuffle([correctTeam, ...wrongTeams]);
 
+      if (wrongTeams.length < 3) continue;
+
+      const options = shuffle([correctTeam, ...wrongTeams]);
       gameRounds.push({
         correctTeam,
         options,
-        correctIndex: options.findIndex((o) => o.idTeam === correctTeam.idTeam),
+        correctIndex: options.findIndex((option) => option.idTeam === correctTeam.idTeam),
       });
     }
 
     return gameRounds;
-  }, [teams]);
+  }, [validTeams]);
 
   const startGame = useCallback(() => {
-    const r = generateRounds();
-    setRounds(r);
+    const generatedRounds = generateRounds();
+    if (generatedRounds.length === 0) return;
+
+    setRounds(generatedRounds);
     setCurrentR(0);
     setScore(0);
     setSelected(null);
     setShowAnswer(false);
-    setRevealed(false);
-    setLoading(false);
     setTimer(10);
-    totalTimeSpent.current = 0;
     setFinalTime(0);
+    totalTimeSpent.current = 0;
     setGameState('playing');
   }, [generateRounds]);
 
-  // Timer countdown
   useEffect(() => {
     if (gameState !== 'playing' || showAnswer) return;
 
     const interval = setInterval(() => {
-      setTimer((t) => {
-        const nextTime = Math.max(0, t - 1);
+      setTimer((currentTimer) => {
+        const nextTimer = Math.max(0, currentTimer - 1);
         totalTimeSpent.current += 1;
-        if (nextTime === 0) {
-          clearInterval(interval);
+        if (nextTimer === 0) {
           setShowAnswer(true);
-          setRevealed(true);
         }
-        return nextTime;
+        return nextTimer;
       });
     }, 1000);
 
@@ -97,43 +124,48 @@ export default function BadgeGame({ teams, mode = 'champions' }) {
     if (showAnswer) return;
     setSelected(idx);
     setShowAnswer(true);
-    setRevealed(true);
     if (idx === rounds[currentR].correctIndex) {
-      setScore((s) => s + 1);
+      setScore((prev) => prev + 1);
     }
   };
 
   const nextRound = () => {
     if (currentR + 1 >= rounds.length) {
-      setFinalTime(totalTimeSpent.current);
+      setFinalTime(Math.max(1, totalTimeSpent.current));
       setGameState('finished');
-    } else {
-      setLoading(true);
-      setRevealed(false);
-      setShowAnswer(false);
-      setSelected(null);
-      // Pequeña pausa para que el filtro de sombra se aplique antes de mostrar la nueva imagen
-      setTimeout(() => {
-        setCurrentR((r) => r + 1);
-        setLoading(false);
-        setTimer(10);
-      }, 150);
+      return;
     }
+
+    setCurrentR((prev) => prev + 1);
+    setSelected(null);
+    setShowAnswer(false);
+    setTimer(10);
   };
 
-  if (!teams || teams.length < 4) {
-    return <p style={{ color: 'var(--text-muted)', textAlign: 'center' }}>Cargando equipos...</p>;
+  if (mode !== 'world-cup') {
+    return (
+      <p style={{ color: 'var(--text-muted)', textAlign: 'center' }}>
+        Este minijuego está disponible solo en modo Mundial.
+      </p>
+    );
+  }
+
+  if (validTeams.length < 4) {
+    return (
+      <p style={{ color: 'var(--text-muted)', textAlign: 'center' }}>
+        No hay suficientes selecciones con bandera disponible por ahora. Intenta más tarde.
+      </p>
+    );
   }
 
   if (gameState === 'idle') {
     return (
       <div className={styles.container}>
         <div className={styles.startScreen}>
-          <div className={styles.icon}>{mode === 'world-cup' ? '🌍' : '🛡️'}</div>
-          <h2 className={styles.title}>{modeConfig.games.badge.title}</h2>
+          <div className={styles.icon}>🚩</div>
+          <h2 className={styles.title}>{gameMeta.title}</h2>
           <p className={styles.subtitle}>
-            {modeConfig.games.badge.description} Tienes <strong>10 segundos</strong> para adivinar antes de
-            que se revele.
+            {gameMeta.description} Tienes <strong>10 segundos</strong> por ronda para acertar.
           </p>
           <button className={styles.startBtn} onClick={startGame}>
             ¡Comenzar!
@@ -145,16 +177,13 @@ export default function BadgeGame({ teams, mode = 'champions' }) {
 
   if (gameState === 'finished') {
     const pct = Math.round((score / rounds.length) * 100);
-    let rank = '👀 Novato';
-    if (pct >= 90) rank = '🦅 Ojo de Águila';
-    else if (pct >= 70) rank = '🔍 Detective del Fútbol';
-    else if (pct >= 50) rank = '🛡️ Conocedor de Escudos';
+    const rank = getRankLabel(pct);
 
     return (
       <div className={styles.container}>
         <div className={styles.resultScreen}>
-          <div className={styles.icon}>{pct >= 70 ? '🎊' : mode === 'world-cup' ? '🌍' : '🛡️'}</div>
-          <h2 className={styles.title}>¡Ronda Completa!</h2>
+          <div className={styles.icon}>{pct >= 70 ? '🎉' : '🌍'}</div>
+          <h2 className={styles.title}>¡Reto completado!</h2>
           <div className={styles.scoreDisplay}>
             <span className={styles.scoreBig}>{score}</span>
             <span className={styles.scoreOf}>/ {rounds.length}</span>
@@ -185,7 +214,6 @@ export default function BadgeGame({ teams, mode = 'champions' }) {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
       <div className={styles.gameHeader}>
         <div className={styles.progress}>
           <div
@@ -194,7 +222,9 @@ export default function BadgeGame({ teams, mode = 'champions' }) {
           />
         </div>
         <div className={styles.headerInfo}>
-          <span className={styles.qCount}>Ronda {currentR + 1} de {rounds.length}</span>
+          <span className={styles.qCount}>
+            Ronda {currentR + 1} de {rounds.length}
+          </span>
           <span className={`${styles.timerBadge} ${timerDanger ? styles.timerDanger : ''}`}>
             ⏱️ {timer}s
           </span>
@@ -202,28 +232,20 @@ export default function BadgeGame({ teams, mode = 'champions' }) {
         </div>
       </div>
 
-      {/* Badge display */}
       <div className={styles.badgeSection}>
-        <div className={`${styles.badgeFrame} ${revealed ? styles.badgeRevealed : ''} ${loading ? styles.badgeHidden : ''}`}>
-          {!loading && (
-            <Image
-              src={round.correctTeam.strBadge}
-              alt={mode === 'world-cup' ? 'Escudo de selección misteriosa' : 'Escudo misterioso'}
-              width={160}
-              height={160}
-              style={{ objectFit: 'contain', pointerEvents: 'none', userSelect: 'none' }}
-              className={styles.badgeImg}
-              draggable={false}
-              onDragStart={(e) => e.preventDefault()}
-            />
-          )}
+        <div className={`${styles.badgeFrame} ${showAnswer ? styles.badgeRevealed : ''}`}>
+          <Image
+            src={round.correctTeam.strCountryFlag}
+            alt={`Bandera de ${round.correctTeam.strTeam}`}
+            width={160}
+            height={110}
+            unoptimized
+            style={{ objectFit: 'contain', width: '100%', height: '100%' }}
+          />
         </div>
-        <p className={styles.badgeHint}>
-          {revealed ? round.correctTeam.strTeam : `¿De qué ${challengeLabel} es este escudo?`}
-        </p>
+        <p className={styles.badgeHint}>¿Qué selección corresponde a esta bandera?</p>
       </div>
 
-      {/* Options */}
       <div className={styles.options}>
         {round.options.map((team, idx) => {
           let cls = styles.option;
@@ -240,14 +262,13 @@ export default function BadgeGame({ teams, mode = 'champions' }) {
         })}
       </div>
 
-      {/* Feedback */}
       {showAnswer && (
         <div className={styles.feedback}>
           <p className={isCorrect ? styles.feedCorrect : styles.feedWrong}>
             {selected === null
-              ? '⏰ ¡Se acabó el tiempo!'
+              ? `⏰ Tiempo agotado. Era: ${round.correctTeam.strTeam}`
               : isCorrect
-              ? '✅ ¡Bien hecho!'
+              ? '✅ ¡Correcto!'
               : `❌ Era: ${round.correctTeam.strTeam}`}
           </p>
           <button className={styles.nextBtn} onClick={nextRound}>

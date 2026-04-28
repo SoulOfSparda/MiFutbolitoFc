@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from 'react';
 import Image from 'next/image';
 import Leaderboard from './Leaderboard';
+import { getGameMode, getModeLeaderboardId } from '@/lib/data/gameModes';
 import styles from './PlayerCluesGame.module.css';
 
 const POSITION_TRANSLATIONS = {
@@ -149,11 +150,14 @@ function translateWeight(weight) {
     .replace(/\bkg\b/gi, 'kg');
 }
 
-function getClues(player) {
+function getClues(player, mode) {
   const clues = [];
   if (player.strPosition) clues.push(`🧤 Posición: ${translatePosition(player.strPosition)}`);
   if (player.strNationality) clues.push(`🌍 Nacionalidad: ${translateNationality(player.strNationality)}`);
-  if (player.strTeam) clues.push(`🏟️ Club: ${player.strTeam}`);
+  if (player.strTeam) {
+    const teamLabel = mode === 'world-cup' ? '🏳️ Selección' : '🏟️ Club';
+    clues.push(`${teamLabel}: ${player.strTeam}`);
+  }
 
   const birthYear = getBirthYear(player.dateBorn);
   if (birthYear) clues.push(`📅 Año de nacimiento: ${birthYear}`);
@@ -168,7 +172,7 @@ function getClues(player) {
   return clues.slice(0, 6);
 }
 
-function generateRounds(players) {
+function generateRounds(players, mode) {
   const validPlayers = players.filter((player) => player.idPlayer && player.strPlayer);
   if (validPlayers.length < 4) return [];
 
@@ -178,7 +182,7 @@ function generateRounds(players) {
 
   for (let i = 0; i < maxRounds; i++) {
     const target = shuffled[i];
-    const clues = getClues(target);
+    const clues = getClues(target, mode);
     if (clues.length < 3) continue;
 
     const wrongOptions = shuffle(
@@ -209,7 +213,7 @@ function getRoundPoints(cluesShown) {
   return Math.max(1, 6 - cluesShown);
 }
 
-export default function PlayerCluesGame({ players }) {
+export default function PlayerCluesGame({ players, mode = 'champions' }) {
   const [gameState, setGameState] = useState('idle');
   const [rounds, setRounds] = useState([]);
   const [currentR, setCurrentR] = useState(0);
@@ -220,9 +224,11 @@ export default function PlayerCluesGame({ players }) {
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [finalTime, setFinalTime] = useState(0);
   const startTimeRef = useRef(0);
+  const modeConfig = getGameMode(mode);
+  const gameId = getModeLeaderboardId('player-clues', mode);
 
   const startGame = useCallback(() => {
-    const generatedRounds = generateRounds(players || []);
+    const generatedRounds = generateRounds(players || [], mode);
     if (generatedRounds.length === 0) return;
 
     setRounds(generatedRounds);
@@ -235,7 +241,7 @@ export default function PlayerCluesGame({ players }) {
     setFinalTime(0);
     startTimeRef.current = Date.now();
     setGameState('playing');
-  }, [players]);
+  }, [mode, players]);
 
   const revealClue = () => {
     if (showAnswer) return;
@@ -272,7 +278,7 @@ export default function PlayerCluesGame({ players }) {
   if (!players || players.length < 4) {
     return (
       <p className={styles.unavailable}>
-        No hay suficientes jugadores disponibles por ahora. Intenta de nuevo en unos minutos.
+        No hay suficientes jugadores disponibles en este modo por ahora. Intenta de nuevo en unos minutos.
       </p>
     );
   }
@@ -281,12 +287,9 @@ export default function PlayerCluesGame({ players }) {
     return (
       <div className={styles.container}>
         <div className={styles.startScreen}>
-          <div className={styles.icon}>🧠</div>
-          <h2 className={styles.title}>Adivina el Jugador por Pistas</h2>
-          <p className={styles.subtitle}>
-            Descubre al futbolista con pistas progresivas. Cuantas menos pistas uses,
-            más puntos sumas en el ranking.
-          </p>
+          <div className={styles.icon}>{mode === 'world-cup' ? '🌍' : '🧠'}</div>
+          <h2 className={styles.title}>{modeConfig.games.playerClues.title}</h2>
+          <p className={styles.subtitle}>{modeConfig.games.playerClues.description}</p>
           <button className={styles.startBtn} onClick={startGame}>
             ¡Empezar Reto!
           </button>
@@ -306,7 +309,7 @@ export default function PlayerCluesGame({ players }) {
     return (
       <div className={styles.container}>
         <div className={styles.resultScreen}>
-          <div className={styles.icon}>{pct >= 70 ? '🎉' : '🧠'}</div>
+          <div className={styles.icon}>{pct >= 70 ? '🎉' : mode === 'world-cup' ? '🌍' : '🧠'}</div>
           <h2 className={styles.title}>¡Reto completado!</h2>
           <div className={styles.scoreDisplay}>
             <span className={styles.scoreBig}>{score}</span>
@@ -330,9 +333,14 @@ export default function PlayerCluesGame({ players }) {
           </button>
 
           <Leaderboard
-            gameId="player-clues"
+            gameId={gameId}
             currentScore={score}
             timeElapsed={finalTime}
+            currentStats={{
+              rounds: rounds.length,
+              correct: correctAnswers,
+              wrong: Math.max(0, rounds.length - correctAnswers),
+            }}
           />
         </div>
       </div>

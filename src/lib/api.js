@@ -1,3 +1,9 @@
+import {
+  WORLD_CUP_FALLBACK_PLAYERS,
+  WORLD_CUP_PLAYER_SEARCH_HINTS,
+  WORLD_CUP_FALLBACK_TEAMS,
+} from '@/lib/data/worldCupFallback';
+
 const BASE_URL = 'https://www.thesportsdb.com/api/v1/json/3';
 
 /**
@@ -114,6 +120,178 @@ export async function getTeamsByLeague(leagueName) {
   }
 
   return teams;
+}
+
+function normalizeTeamName(value) {
+  return (value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
+function hasUsableImage(value) {
+  const normalized = (value || '').trim();
+  if (!normalized) return false;
+
+  const lower = normalized.toLowerCase();
+  return lower !== 'null' && lower !== 'undefined' && lower !== 'n/a';
+}
+
+function normalizeGameTeam(team) {
+  return {
+    idTeam: String(team?.idTeam || ''),
+    strTeam: team?.strTeam || '',
+    strBadge: hasUsableImage(team?.strBadge) ? team.strBadge.trim() : '',
+    strCountryFlag: hasUsableImage(team?.strCountryFlag)
+      ? team.strCountryFlag.trim()
+      : '',
+  };
+}
+
+function normalizeGamePlayer(player) {
+  return {
+    idPlayer: String(player?.idPlayer || ''),
+    strPlayer: player?.strPlayer || '',
+    strTeam: player?.strTeam || '',
+    strNationality: player?.strNationality || '',
+    strPosition: player?.strPosition || '',
+    dateBorn: player?.dateBorn || '',
+    strNumber: player?.strNumber || '',
+    strHeight: player?.strHeight || '',
+    strWeight: player?.strWeight || '',
+    strThumb: player?.strThumb || player?.strCutout || '',
+  };
+}
+
+function hasMinimumClues(player) {
+  const available = [
+    player.strPosition,
+    player.strNationality,
+    player.strTeam,
+    player.dateBorn,
+    player.strNumber || player.strHeight || player.strWeight,
+  ].filter(Boolean).length;
+  return available >= 3;
+}
+
+function looksLikeNationalTeam(team) {
+  const leaguesText = [team?.strLeague, team?.strLeague2, team?.strLeague3]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  const teamName = (team?.strTeam || '').toLowerCase();
+
+  return (
+    leaguesText.includes('world cup') ||
+    leaguesText.includes('national') ||
+    leaguesText.includes('fifa') ||
+    teamName.includes('national team')
+  );
+}
+
+function mergeWorldCupTeams(apiTeams, fallbackTeams) {
+  const merged = new Map();
+  const allTeams = [...apiTeams, ...fallbackTeams];
+
+  for (const team of allTeams) {
+    const normalized = normalizeGameTeam(team);
+    if (!normalized.idTeam || !normalized.strTeam) continue;
+
+    const key = normalizeTeamName(normalized.strTeam) || normalized.idTeam;
+    const existing = merged.get(key);
+    if (!existing) {
+      merged.set(key, normalized);
+      continue;
+    }
+
+    merged.set(key, {
+      idTeam: existing.idTeam || normalized.idTeam,
+      strTeam: existing.strTeam || normalized.strTeam,
+      strBadge: existing.strBadge || normalized.strBadge,
+      strCountryFlag: existing.strCountryFlag || normalized.strCountryFlag,
+    });
+  }
+
+  return Array.from(merged.values());
+}
+
+function mergeWorldCupPlayers(apiPlayers, fallbackPlayers, requireMinimumClues = true) {
+  const merged = new Map();
+  const allPlayers = [...apiPlayers, ...fallbackPlayers];
+
+  for (const rawPlayer of allPlayers) {
+    const player = normalizeGamePlayer(rawPlayer);
+    if (!player.idPlayer || !player.strPlayer) continue;
+    if (requireMinimumClues && !hasMinimumClues(player)) continue;
+
+    const key = player.idPlayer || normalizeTeamName(player.strPlayer);
+    if (!merged.has(key)) {
+      merged.set(key, player);
+    }
+  }
+
+  return Array.from(merged.values());
+}
+
+async function getPlayersByNameHints(hints = []) {
+  if (!Array.isArray(hints) || hints.length === 0) return [];
+
+  const playersByName = await Promise.all(
+    hints.map((name) =>
+      fetchAPI(`searchplayers.php?p=${encodeURIComponent(name)}`)
+        .then((data) => data?.player || [])
+        .catch(() => [])
+    )
+  );
+
+  return playersByName.flat().map(normalizeGamePlayer);
+}
+
+export async function getWorldCupTeams() {
+  const leagueNames = ['FIFA World Cup', 'FIFA World Cup 2026', 'World Cup'];
+  const teamsByLeague = await Promise.all(
+    leagueNames.map((name) => getTeamsByLeague(name).catch(() => []))
+  );
+
+  const apiTeams = teamsByLeague
+    .flat()
+    .filter((team) => team?.strTeam && team?.idTeam)
+    .filter(looksLikeNationalTeam)
+    .map(normalizeGameTeam);
+
+  const merged = mergeWorldCupTeams(apiTeams, WORLD_CUP_FALLBACK_TEAMS);
+  const teamsWithBadge = merged.filter((team) => team.strBadge);
+
+  if (teamsWithBadge.length < 4) {
+    return WORLD_CUP_FALLBACK_TEAMS;
+  }
+
+  return merged;
+}
+
+export async function getWorldCupPlayers(teams = [], options = {}) {
+  const requireMinimumClues = options.requireMinimumClues ?? true;
+  const limit = options.limit ?? 220;
+  const includeNameHints = options.includeNameHints ?? false;
+  const numericTeamIds = teams
+    .map((team) => String(team?.idTeam || ''))
+    .filter((idTeam) => /^\d+$/.test(idTeam))
+    .slice(0, 32);
+
+  const playersByTeam = await Promise.all(
+    numericTeamIds.map((idTeam) => getTeamPlayers(idTeam).catch(() => []))
+  );
+  const hintPlayers = includeNameHints
+    ? await getPlayersByNameHints(WORLD_CUP_PLAYER_SEARCH_HINTS)
+    : [];
+
+  const apiPlayers = [...playersByTeam.flat(), ...hintPlayers]
+    .flat()
+    .filter((player) => player?.idPlayer && player?.strPlayer)
+    .map(normalizeGamePlayer);
+
+  return mergeWorldCupPlayers(apiPlayers, WORLD_CUP_FALLBACK_PLAYERS, requireMinimumClues).slice(0, limit);
 }
 
 // --- Standings ---

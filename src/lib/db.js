@@ -21,8 +21,14 @@ export async function createTableIfNotExists() {
         game_id VARCHAR(50) NOT NULL,
         score INTEGER NOT NULL,
         completed_in_seconds INTEGER,
+        stats_json JSONB,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+    `;
+
+    await sql`
+      ALTER TABLE leaderboards
+      ADD COLUMN IF NOT EXISTS stats_json JSONB;
     `;
   } catch (error) {
     console.error('Error creating leaderboards table:', error);

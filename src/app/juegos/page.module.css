@@ -35,6 +35,43 @@
   margin: 0 auto;
 }
 
+.modeSwitcher {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0 auto 1rem;
+  flex-wrap: wrap;
+}
+
+.modeButton {
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.modeButton:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.modeButtonActive {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.24), rgba(6, 182, 212, 0.2));
+}
+
+.modeSubtitle {
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto 1.5rem;
+}
+
 /* --- Game Card --- */
 .gameCard {
   background: var(--card-bg);
@@ -67,6 +104,14 @@
   background: linear-gradient(90deg, #06b6d4, #22d3ee);
 }
 
+.gameCardOrange::before {
+  background: linear-gradient(90deg, #f59e0b, #f97316);
+}
+
+.gameCardLime::before {
+  background: linear-gradient(90deg, #84cc16, #22c55e);
+}
+
 .gameCard:hover {
   transform: translateY(-5px);
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
@@ -83,6 +128,14 @@
 
 .gameCardCyan:hover {
   border-color: #06b6d4;
+}
+
+.gameCardOrange:hover {
+  border-color: #f59e0b;
+}
+
+.gameCardLime:hover {
+  border-color: #84cc16;
 }
 
 .gameIcon {
@@ -148,6 +201,16 @@
   color: #00222a;
 }
 
+.gameCardOrange .playBadge {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: #3b1f00;
+}
+
+.gameCardLime .playBadge {
+  background: linear-gradient(135deg, #84cc16, #22c55e);
+  color: #112b09;
+}
+
 .gameCard:hover .playBadge {
   transform: scale(1.05);
 }
@@ -176,4 +239,5 @@
   .title { font-size: 2rem; }
   .gamesGrid { grid-template-columns: 1fr; }
   .gameCard { padding: 1.5rem; }
+  .modeSubtitle { font-size: 0.95rem; }
 }

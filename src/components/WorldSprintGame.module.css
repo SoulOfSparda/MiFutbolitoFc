@@ -1,0 +1,264 @@
+.container {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.startScreen,
+.resultScreen,
+.statementCard,
+.feedbackBox {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.startScreen,
+.resultScreen {
+  text-align: center;
+  padding: 2.1rem 1.5rem;
+}
+
+.icon {
+  font-size: 2.7rem;
+  margin-bottom: 0.9rem;
+}
+
+.title {
+  font-size: 1.7rem;
+  color: var(--text-primary);
+  margin-bottom: 0.45rem;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  margin: 0 auto 1.3rem;
+  max-width: 56ch;
+}
+
+.startBtn {
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f59e0b, #06b6d4);
+  color: #051015;
+  font-weight: 800;
+  padding: 0.72rem 1.4rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.startBtn:hover {
+  transform: translateY(-2px);
+}
+
+.gameHeader {
+  margin-bottom: 1rem;
+}
+
+.progress {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.progressBar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f59e0b, #06b6d4);
+  transition: width 0.35s ease;
+}
+
+.headerInfo {
+  margin-top: 0.65rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.counter,
+.timerBadge,
+.lives,
+.score {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.timerDanger {
+  color: #fca5a5;
+  border-color: rgba(252, 165, 165, 0.5);
+  background: rgba(127, 29, 29, 0.35);
+}
+
+.statementCard {
+  min-height: 170px;
+  padding: 1.5rem;
+  display: grid;
+  place-items: center;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.statementCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.26;
+  background: radial-gradient(circle at 30% 20%, rgba(245, 158, 11, 0.3), transparent 50%);
+  pointer-events: none;
+}
+
+.statementText {
+  color: var(--text-primary);
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
+  text-align: center;
+  line-height: 1.45;
+  font-weight: 700;
+  max-width: 58ch;
+  position: relative;
+  z-index: 1;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.answerBtn {
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  padding: 0.85rem 0.9rem;
+  font-weight: 800;
+  font-size: 0.96rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.answerBtn:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.answerTrue {
+  background: rgba(16, 185, 129, 0.14);
+  color: #b2f7da;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.answerTrue:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: rgba(16, 185, 129, 0.22);
+}
+
+.answerFalse {
+  background: rgba(244, 63, 94, 0.13);
+  color: #fecdd3;
+  border-color: rgba(244, 63, 94, 0.42);
+}
+
+.answerFalse:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: rgba(244, 63, 94, 0.22);
+}
+
+.feedbackBox {
+  min-height: 84px;
+  padding: 0.9rem 1rem;
+  display: grid;
+  align-items: center;
+}
+
+.feedbackNeutral,
+.feedbackCorrect,
+.feedbackWrong {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.feedbackNeutral {
+  color: var(--text-muted);
+}
+
+.feedbackCorrect {
+  color: #6ee7b7;
+}
+
+.feedbackWrong {
+  color: #fda4af;
+}
+
+.scoreDisplay {
+  margin: 0.8rem 0 0.35rem;
+}
+
+.scoreBig {
+  font-size: 2.7rem;
+  font-weight: 900;
+  color: var(--text-primary);
+}
+
+.scoreOf {
+  margin-left: 0.25rem;
+  color: var(--text-muted);
+}
+
+.rank {
+  color: var(--text-secondary);
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.stat {
+  min-width: 130px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 0.6rem 0.7rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.statNum {
+  display: block;
+  color: var(--text-primary);
+  font-weight: 900;
+  font-size: 1.08rem;
+}
+
+.statLabel {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 720px) {
+  .actions {
+    grid-template-columns: 1fr;
+  }
+
+  .statementCard {
+    min-height: 150px;
+  }
+
+  .startScreen,
+  .resultScreen {
+    padding: 1.65rem 1.1rem;
+  }
+}

@@ -1,22 +1,88 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import TriviaGame from '@/components/TriviaGame';
 import BadgeGame from '@/components/BadgeGame';
+import WorldFlagGame from '@/components/WorldFlagGame';
 import PlayerCluesGame from '@/components/PlayerCluesGame';
+import WorldSprintGame from '@/components/WorldSprintGame';
+import WorldPlayerPhotoGame from '@/components/WorldPlayerPhotoGame';
+import { DEFAULT_GAME_MODE, GAME_MODES, getGameMode } from '@/lib/data/gameModes';
 import styles from './page.module.css';
 
-export default function GamesClient({ teams, players }) {
+const GAME_CARDS_BY_MODE = {
+  champions: [
+    { id: 'trivia', configKey: 'trivia', icon: '🏆', colorClass: '' },
+    { id: 'badge', configKey: 'badge', icon: '🛡️', colorClass: 'gameCardPurple' },
+    {
+      id: 'player-clues',
+      configKey: 'playerClues',
+      icon: '🧠',
+      colorClass: 'gameCardCyan',
+    },
+  ],
+  'world-cup': [
+    { id: 'trivia', configKey: 'trivia', icon: '🏆', colorClass: '' },
+    {
+      id: 'world-flag',
+      configKey: 'worldFlag',
+      icon: '🚩',
+      colorClass: 'gameCardPurple',
+    },
+    {
+      id: 'world-sprint',
+      configKey: 'worldSprint',
+      icon: '⚡',
+      colorClass: 'gameCardOrange',
+    },
+    {
+      id: 'player-photo',
+      configKey: 'playerPhoto',
+      icon: '📸',
+      colorClass: 'gameCardLime',
+    },
+    {
+      id: 'player-clues',
+      configKey: 'playerClues',
+      icon: '🧠',
+      colorClass: 'gameCardCyan',
+    },
+  ],
+};
+
+export default function GamesClient({ datasets }) {
+  const [activeMode, setActiveMode] = useState(DEFAULT_GAME_MODE);
   const [activeGame, setActiveGame] = useState(null);
+  const gameSectionRef = useRef(null);
+  const modeConfig = getGameMode(activeMode);
+  const modeDataset = datasets?.[activeMode] || { teams: [], players: [] };
+  const gameCards = GAME_CARDS_BY_MODE[activeMode] || GAME_CARDS_BY_MODE[DEFAULT_GAME_MODE];
+
+  const focusGameSection = useCallback(() => {
+    if (!gameSectionRef.current) return;
+    gameSectionRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+      inline: 'nearest',
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!activeGame) return;
+    const id = window.requestAnimationFrame(() => {
+      focusGameSection();
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [activeGame, focusGameSection]);
 
   if (activeGame === 'trivia') {
     return (
-      <section className="section">
+      <section className="section" ref={gameSectionRef}>
         <div className="container">
           <button className={styles.backBtn} onClick={() => setActiveGame(null)}>
             ← Volver a Juegos
           </button>
-          <TriviaGame />
+          <TriviaGame mode={activeMode} />
         </div>
       </section>
     );
@@ -24,12 +90,38 @@ export default function GamesClient({ teams, players }) {
 
   if (activeGame === 'badge') {
     return (
-      <section className="section">
+      <section className="section" ref={gameSectionRef}>
         <div className="container">
           <button className={styles.backBtn} onClick={() => setActiveGame(null)}>
             ← Volver a Juegos
           </button>
-          <BadgeGame teams={teams} />
+          <BadgeGame teams={modeDataset.teams || []} mode={activeMode} />
+        </div>
+      </section>
+    );
+  }
+
+  if (activeGame === 'world-flag') {
+    return (
+      <section className="section" ref={gameSectionRef}>
+        <div className="container">
+          <button className={styles.backBtn} onClick={() => setActiveGame(null)}>
+            ← Volver a Juegos
+          </button>
+          <WorldFlagGame teams={modeDataset.teams || []} mode={activeMode} />
+        </div>
+      </section>
+    );
+  }
+
+  if (activeGame === 'world-sprint') {
+    return (
+      <section className="section" ref={gameSectionRef}>
+        <div className="container">
+          <button className={styles.backBtn} onClick={() => setActiveGame(null)}>
+            ← Volver a Juegos
+          </button>
+          <WorldSprintGame mode={activeMode} />
         </div>
       </section>
     );
@@ -37,12 +129,28 @@ export default function GamesClient({ teams, players }) {
 
   if (activeGame === 'player-clues') {
     return (
-      <section className="section">
+      <section className="section" ref={gameSectionRef}>
         <div className="container">
           <button className={styles.backBtn} onClick={() => setActiveGame(null)}>
             ← Volver a Juegos
           </button>
-          <PlayerCluesGame players={players} />
+          <PlayerCluesGame players={modeDataset.players || []} mode={activeMode} />
+        </div>
+      </section>
+    );
+  }
+
+  if (activeGame === 'player-photo') {
+    return (
+      <section className="section" ref={gameSectionRef}>
+        <div className="container">
+          <button className={styles.backBtn} onClick={() => setActiveGame(null)}>
+            ← Volver a Juegos
+          </button>
+          <WorldPlayerPhotoGame
+            players={modeDataset.photoPlayers || modeDataset.players || []}
+            mode={activeMode}
+          />
         </div>
       </section>
     );
@@ -51,60 +159,59 @@ export default function GamesClient({ teams, players }) {
   return (
     <section className="section">
       <div className="container">
+        <div className={styles.modeSwitcher}>
+          {Object.values(GAME_MODES).map((mode) => (
+            <button
+              key={mode.id}
+              type="button"
+              className={`${styles.modeButton} ${activeMode === mode.id ? styles.modeButtonActive : ''}`}
+              onClick={() => {
+                setActiveMode(mode.id);
+                setActiveGame(null);
+              }}
+            >
+              <span>{mode.emoji}</span> {mode.label}
+            </button>
+          ))}
+        </div>
+
+        <p className={styles.modeSubtitle}>{modeConfig.subtitle}</p>
+
         <div className={styles.gamesGrid}>
-          {/* Trivia Card */}
-          <div className={`${styles.gameCard} animate-in`} onClick={() => setActiveGame('trivia')}>
-            <div className={styles.gameIcon}>🏆</div>
-            <div className={styles.gameCardContent}>
-              <h2 className={styles.gameTitle}>Maestro de Champions</h2>
-              <p className={styles.gameDesc}>
-                Trivia histórica con 15 preguntas sobre la UEFA Champions League.
-                ¿Podrás conseguir el rango de Leyenda Absoluta?
-              </p>
-              <div className={styles.gameTags}>
-                <span className={styles.tag}>📝 10 preguntas</span>
-                <span className={styles.tag}>⏱️ Sin límite</span>
-                <span className={styles.tag}>🏅 Ranking</span>
+          {gameCards.map((game, idx) => {
+            const gameConfig = modeConfig.games[game.configKey];
+            return (
+              <div
+                key={game.id}
+                className={`${styles.gameCard} ${game.colorClass ? styles[game.colorClass] : ''} animate-in ${
+                  idx === 1
+                    ? 'animate-in-delay-1'
+                    : idx === 2
+                    ? 'animate-in-delay-2'
+                    : idx === 3
+                    ? 'animate-in-delay-3'
+                    : idx === 4
+                    ? 'animate-in-delay-4'
+                    : ''
+                }`}
+                onClick={() => setActiveGame(game.id)}
+              >
+                <div className={styles.gameIcon}>{game.icon}</div>
+                <div className={styles.gameCardContent}>
+                  <h2 className={styles.gameTitle}>{gameConfig.title}</h2>
+                  <p className={styles.gameDesc}>{gameConfig.description}</p>
+                  <div className={styles.gameTags}>
+                    {gameConfig.tags.map((tag) => (
+                      <span key={tag} className={styles.tag}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className={styles.playBadge}>JUGAR →</div>
               </div>
-            </div>
-            <div className={styles.playBadge}>JUGAR →</div>
-          </div>
-
-          {/* Badge Card */}
-          <div className={`${styles.gameCard} ${styles.gameCardPurple} animate-in animate-in-delay-1`} onClick={() => setActiveGame('badge')}>
-            <div className={styles.gameIcon}>🛡️</div>
-            <div className={styles.gameCardContent}>
-              <h2 className={styles.gameTitle}>Adivina el Escudo</h2>
-              <p className={styles.gameDesc}>
-                Te mostramos el escudo de un equipo oculto en las sombras. 
-                Tienes 10 segundos para adivinar de cuál club se trata.
-              </p>
-              <div className={styles.gameTags}>
-                <span className={styles.tag}>🛡️ 10 rondas</span>
-                <span className={styles.tag}>⏱️ 10 seg c/u</span>
-                <span className={styles.tag}>🔮 Sombras</span>
-              </div>
-            </div>
-            <div className={styles.playBadge}>JUGAR →</div>
-          </div>
-
-          {/* Player Clues Card */}
-          <div className={`${styles.gameCard} ${styles.gameCardCyan} animate-in animate-in-delay-2`} onClick={() => setActiveGame('player-clues')}>
-            <div className={styles.gameIcon}>🧠</div>
-            <div className={styles.gameCardContent}>
-              <h2 className={styles.gameTitle}>Adivina el Jugador por Pistas</h2>
-              <p className={styles.gameDesc}>
-                Descubre al futbolista correcto usando pistas progresivas de posición,
-                nacionalidad, club y más. Menos pistas usadas = más puntos.
-              </p>
-              <div className={styles.gameTags}>
-                <span className={styles.tag}>🧩 10 rondas</span>
-                <span className={styles.tag}>🎯 Opciones múltiples</span>
-                <span className={styles.tag}>🏅 Ranking</span>
-              </div>
-            </div>
-            <div className={styles.playBadge}>JUGAR →</div>
-          </div>
+            );
+          })}
         </div>
       </div>
     </section>
