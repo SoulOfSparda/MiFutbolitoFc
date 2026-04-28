@@ -30,12 +30,28 @@ function hasUsablePhoto(value) {
   return lower !== 'null' && lower !== 'undefined' && lower !== 'n/a';
 }
 
+function hasPlayerCoreSignals(player) {
+  const position = (player?.strPosition || '').toLowerCase();
+  const hasNumber = Boolean(String(player?.strNumber || '').trim());
+  const hasPlayerPosition =
+    position.includes('goalkeeper') ||
+    position.includes('keeper') ||
+    position.includes('defender') ||
+    position.includes('back') ||
+    position.includes('midfield') ||
+    position.includes('winger') ||
+    position.includes('forward') ||
+    position.includes('striker');
+
+  return hasPlayerPosition || hasNumber;
+}
+
 function isCoachProfile(player) {
   const position = (player?.strPosition || '').toLowerCase();
   const status = (player?.strStatus || '').toLowerCase();
   const description = (player?.strDescriptionEN || '').toLowerCase();
   const name = (player?.strPlayer || '').toLowerCase();
-  return (
+  const hasCoachKeywords =
     position.includes('manager') ||
     position.includes('coach') ||
     position.includes('assistant') ||
@@ -49,26 +65,27 @@ function isCoachProfile(player) {
     description.includes('football manager') ||
     description.includes('manager of') ||
     name.includes(' coach') ||
-    name.startsWith('coach ')
-  );
+    name.startsWith('coach ');
+
+  if (hasCoachKeywords) return true;
+
+  // Si no hay señales de jugador y sí hay texto descriptivo/status, lo tratamos como perfil técnico.
+  const hasAnyMeta = Boolean(status || description || position);
+  const mentionsPlayerInDescription =
+    description.includes('footballer') ||
+    description.includes('midfielder') ||
+    description.includes('defender') ||
+    description.includes('forward') ||
+    description.includes('striker') ||
+    description.includes('goalkeeper');
+
+  if (!hasPlayerCoreSignals(player) && hasAnyMeta && !mentionsPlayerInDescription) return true;
+
+  return false;
 }
 
 function isLikelyFieldPlayer(player) {
-  const position = (player?.strPosition || '').toLowerCase();
-  const hasNumber = Boolean(String(player?.strNumber || '').trim());
-  const hasHeight = Boolean(String(player?.strHeight || '').trim());
-  const hasWeight = Boolean(String(player?.strWeight || '').trim());
-  const hasPlayerPosition =
-    position.includes('goalkeeper') ||
-    position.includes('keeper') ||
-    position.includes('defender') ||
-    position.includes('back') ||
-    position.includes('midfield') ||
-    position.includes('winger') ||
-    position.includes('forward') ||
-    position.includes('striker');
-
-  return hasPlayerPosition || hasNumber || hasHeight || hasWeight;
+  return hasPlayerCoreSignals(player);
 }
 
 function getRankLabel(pct) {
@@ -139,7 +156,7 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
       MAX_ROUNDS,
       Math.max(MIN_ROUNDS, Math.floor(validPlayers.length * 0.82))
     );
-    const openingPlayerRounds = playerProfiles.length > 0 ? Math.min(40, maxRounds) : 0;
+    const openingPlayerRounds = playerProfiles.length > 0 ? Math.min(45, maxRounds) : 0;
     const gameRounds = [];
     const usedPlayerIds = new Set();
     const usedCoachIds = new Set();
@@ -154,7 +171,7 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
         sourcePool = playerProfiles;
         usedSet = usedPlayerIds;
       } else if (hasMixedProfiles) {
-        const prefersPlayer = i < 40 ? Math.random() < 0.84 : Math.random() < 0.7;
+        const prefersPlayer = i < 45 ? Math.random() < 0.88 : Math.random() < 0.72;
         sourcePool = prefersPlayer ? playerProfiles : coachProfiles;
         usedSet = prefersPlayer ? usedPlayerIds : usedCoachIds;
       }
