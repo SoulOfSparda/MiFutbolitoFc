@@ -45,6 +45,24 @@ function isCoachProfile(player) {
   );
 }
 
+function isLikelyFieldPlayer(player) {
+  const position = (player?.strPosition || '').toLowerCase();
+  const hasNumber = Boolean(String(player?.strNumber || '').trim());
+  const hasHeight = Boolean(String(player?.strHeight || '').trim());
+  const hasWeight = Boolean(String(player?.strWeight || '').trim());
+  const hasPlayerPosition =
+    position.includes('goalkeeper') ||
+    position.includes('keeper') ||
+    position.includes('defender') ||
+    position.includes('back') ||
+    position.includes('midfield') ||
+    position.includes('winger') ||
+    position.includes('forward') ||
+    position.includes('striker');
+
+  return hasPlayerPosition || hasNumber || hasHeight || hasWeight;
+}
+
 function getRankLabel(pct) {
   if (pct >= 90) return '📸 Radar Elite';
   if (pct >= 70) return '🏆 Ojo Mundialista';
@@ -84,6 +102,9 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
           strTeam: (player?.strTeam || '').trim(),
           strNationality: (player?.strNationality || '').trim(),
           strPosition: (player?.strPosition || '').trim(),
+          strNumber: (player?.strNumber || '').trim(),
+          strHeight: (player?.strHeight || '').trim(),
+          strWeight: (player?.strWeight || '').trim(),
           isCoach: isCoachProfile(player),
         });
       }
@@ -95,7 +116,13 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
   const generateRounds = useCallback(() => {
     if (validPlayers.length < 4) return [];
 
-    const playerProfiles = validPlayers.filter((profile) => !profile.isCoach);
+    const strictPlayerProfiles = validPlayers.filter(
+      (profile) => !profile.isCoach && isLikelyFieldPlayer(profile)
+    );
+    const playerProfiles =
+      strictPlayerProfiles.length >= 12
+        ? strictPlayerProfiles
+        : validPlayers.filter((profile) => !profile.isCoach);
     const coachProfiles = validPlayers.filter((profile) => profile.isCoach);
     const hasMixedProfiles = playerProfiles.length > 0 && coachProfiles.length > 0;
 
@@ -103,7 +130,7 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
       MAX_ROUNDS,
       Math.max(MIN_ROUNDS, Math.floor(validPlayers.length * 0.82))
     );
-    const openingPlayerRounds = playerProfiles.length > 0 ? Math.min(22, maxRounds) : 0;
+    const openingPlayerRounds = playerProfiles.length > 0 ? Math.min(28, maxRounds) : 0;
     const gameRounds = [];
     const usedPlayerIds = new Set();
     const usedCoachIds = new Set();
@@ -118,7 +145,7 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
         sourcePool = playerProfiles;
         usedSet = usedPlayerIds;
       } else if (hasMixedProfiles) {
-        const prefersPlayer = i < 35 ? Math.random() < 0.74 : Math.random() < 0.62;
+        const prefersPlayer = i < 35 ? Math.random() < 0.8 : Math.random() < 0.66;
         sourcePool = prefersPlayer ? playerProfiles : coachProfiles;
         usedSet = prefersPlayer ? usedPlayerIds : usedCoachIds;
       }
