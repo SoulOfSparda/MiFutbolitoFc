@@ -55,6 +55,14 @@ function hasUsablePhoto(value) {
   return lower !== 'null' && lower !== 'undefined' && lower !== 'n/a';
 }
 
+function normalizeSearchKey(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
 function isGeneratedFallbackPlayer(player) {
   return String(player?.idPlayer || '').startsWith('wc-p-');
 }
@@ -63,7 +71,7 @@ function dedupePlayersByIdOrName(players) {
   const seen = new Set();
   return players.filter((player) => {
     const id = String(player?.idPlayer || '').trim();
-    const name = String(player?.strPlayer || '').trim().toLowerCase();
+    const name = normalizeSearchKey(player?.strPlayer);
     const key = id || name;
     if (!key || seen.has(key)) return false;
     seen.add(key);
@@ -103,10 +111,16 @@ export default async function JuegosPage() {
   const realWorldCupPhotoPlayers = worldCupPhotoPlayers.filter(
     (player) => hasUsablePhoto(player?.strThumb) && !isGeneratedFallbackPlayer(player)
   );
+  const worldCupEligibleNames = new Set(
+    [...worldCupPlayers, ...worldCupPhotoPlayers].map((player) => normalizeSearchKey(player?.strPlayer))
+  );
   const championsPhotoPlayers = championsPlayers.filter((player) => hasUsablePhoto(player?.strThumb));
+  const championsWorldCupPhotoPlayers = championsPhotoPlayers.filter((player) =>
+    worldCupEligibleNames.has(normalizeSearchKey(player?.strPlayer))
+  );
   const preferredPhotoPlayers = dedupePlayersByIdOrName([
     ...realWorldCupPhotoPlayers,
-    ...championsPhotoPlayers,
+    ...championsWorldCupPhotoPlayers,
   ]);
   const resolvedPhotoPlayers = preferredPhotoPlayers.length >= 4 ? preferredPhotoPlayers : worldCupPhotoPlayers;
 
@@ -114,8 +128,9 @@ export default async function JuegosPage() {
     const totalWithPhoto = worldCupPhotoPlayers.filter((player) => hasUsablePhoto(player?.strThumb)).length;
     const totalRealWorldCup = realWorldCupPhotoPlayers.length;
     const totalChampionsPhotos = championsPhotoPlayers.length;
+    const totalChampionsEligible = championsWorldCupPhotoPlayers.length;
     console.info(
-      `[juegos] worldCupPhotoPlayers=${worldCupPhotoPlayers.length} withPhoto=${totalWithPhoto} realWorldCup=${totalRealWorldCup} championsPhotos=${totalChampionsPhotos} resolved=${resolvedPhotoPlayers.length}`
+      `[juegos] worldCupPhotoPlayers=${worldCupPhotoPlayers.length} withPhoto=${totalWithPhoto} realWorldCup=${totalRealWorldCup} championsPhotos=${totalChampionsPhotos} championsEligible=${totalChampionsEligible} resolved=${resolvedPhotoPlayers.length}`
     );
   }
 
