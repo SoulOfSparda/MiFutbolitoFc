@@ -48,6 +48,13 @@ function normalizePlayersPool(playersNested) {
     .slice(0, 160);
 }
 
+function hasUsablePhoto(value) {
+  const normalized = (value || '').trim();
+  if (!normalized) return false;
+  const lower = normalized.toLowerCase();
+  return lower !== 'null' && lower !== 'undefined' && lower !== 'n/a';
+}
+
 async function getChampionsPlayers(teams) {
   const playerSourceTeams = teams.filter((team) => team.idTeam).slice(0, 8);
   const playersNested = await Promise.all(
@@ -71,10 +78,18 @@ export default async function JuegosPage() {
       requireMinimumClues: false,
       includeNameHints: true,
       excludeCoachProfiles: true,
+      skipTeamLookups: true,
       maxNameHints: 24,
       limit: 600,
     }).catch(() => []),
   ]);
+
+  if (process.env.DEBUG_WORLD_CUP_PHOTOS === '1') {
+    const totalWithPhoto = worldCupPhotoPlayers.filter((player) => hasUsablePhoto(player?.strThumb)).length;
+    console.info(
+      `[juegos] worldCupPhotoPlayers=${worldCupPhotoPlayers.length} withPhoto=${totalWithPhoto}`
+    );
+  }
 
   const datasets = {
     champions: {

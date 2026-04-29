@@ -299,15 +299,19 @@ export async function getWorldCupPlayers(teams = [], options = {}) {
   const limit = options.limit ?? 220;
   const includeNameHints = options.includeNameHints ?? false;
   const excludeCoachProfiles = options.excludeCoachProfiles ?? false;
+  const skipTeamLookups = options.skipTeamLookups ?? false;
   const maxNameHints = options.maxNameHints ?? 24;
-  const numericTeamIds = teams
-    .map((team) => String(team?.idTeam || ''))
-    .filter((idTeam) => /^\d+$/.test(idTeam))
-    .slice(0, 32);
+  const numericTeamIds = skipTeamLookups
+    ? []
+    : teams
+        .map((team) => String(team?.idTeam || ''))
+        .filter((idTeam) => /^\d+$/.test(idTeam))
+        .slice(0, 32);
 
-  const playersByTeam = await Promise.all(
-    numericTeamIds.map((idTeam) => getTeamPlayers(idTeam).catch(() => []))
-  );
+  const playersByTeam =
+    numericTeamIds.length > 0
+      ? await Promise.all(numericTeamIds.map((idTeam) => getTeamPlayers(idTeam).catch(() => [])))
+      : [];
   const hintPlayers = includeNameHints
     ? await getPlayersByNameHints(WORLD_CUP_PLAYER_SEARCH_HINTS, { maxHints: maxNameHints })
     : [];

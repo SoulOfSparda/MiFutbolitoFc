@@ -258,7 +258,7 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
   if (validPlayers.length < 4) {
     return (
       <p style={{ color: 'var(--text-muted)', textAlign: 'center' }}>
-        No hay suficientes jugadores reales con foto disponible por ahora. Intenta mas tarde.
+        No hay suficientes jugadores con imagen disponible por ahora. Intenta mas tarde.
       </p>
     );
   }

@@ -35,6 +35,24 @@ function createFallbackCountryFlag(primary, secondary) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
+function normalizeLookupKey(value) {
+  return (value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
+function createPlayerInitials(name) {
+  return (name || '')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+}
+
 const WORLD_CUP_TEAM_BASE = [
   ['wc-arg', 'Argentina', '#6ec7ff', '#0a3d91'],
   ['wc-bra', 'Brasil', '#f7d117', '#1f8f3f'],
@@ -77,6 +95,35 @@ const WORLD_CUP_TEAM_BASE = [
   ['wc-tun', 'Tunez', '#d12f2f', '#ffffff'],
   ['wc-qat', 'Qatar', '#7a1535', '#ffffff'],
 ];
+
+const TEAM_COLORS_BY_NAME = new Map(
+  WORLD_CUP_TEAM_BASE.map(([, teamName, primary, secondary]) => [
+    normalizeLookupKey(teamName),
+    { primary, secondary },
+  ])
+);
+
+function createFallbackPlayerPhoto(playerName, teamName) {
+  const palette = TEAM_COLORS_BY_NAME.get(normalizeLookupKey(teamName)) || {
+    primary: '#1d4ed8',
+    secondary: '#111111',
+  };
+  const initials = createPlayerInitials(playerName) || 'FP';
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='360' height='360' viewBox='0 0 360 360'>
+    <defs>
+      <linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'>
+        <stop offset='0%' stop-color='${palette.primary}' />
+        <stop offset='100%' stop-color='${palette.secondary}' />
+      </linearGradient>
+    </defs>
+    <rect width='360' height='360' fill='url(#bg)' />
+    <circle cx='180' cy='136' r='72' fill='rgba(255,255,255,0.9)' />
+    <path d='M62 314c0-69 53-111 118-111s118 42 118 111z' fill='rgba(255,255,255,0.9)' />
+    <rect x='18' y='18' width='324' height='324' rx='22' fill='none' stroke='rgba(255,255,255,0.25)' stroke-width='8' />
+    <text x='180' y='340' text-anchor='middle' fill='white' font-family='Arial, sans-serif' font-size='34' font-weight='700'>${initials}</text>
+  </svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
 
 export const WORLD_CUP_FALLBACK_TEAMS = WORLD_CUP_TEAM_BASE.map(
   ([idTeam, strTeam, primary, secondary]) => ({
@@ -245,7 +292,7 @@ export const WORLD_CUP_FALLBACK_PLAYERS = [
     strNumber,
     strHeight: '',
     strWeight: '',
-    strThumb: '',
+    strThumb: createFallbackPlayerPhoto(strPlayer, strTeam),
   })
 );
 
