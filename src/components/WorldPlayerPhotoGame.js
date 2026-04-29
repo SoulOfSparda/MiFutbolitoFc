@@ -386,7 +386,7 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
             alt={`Foto de ${round.correctPlayer.strPlayer}`}
             width={280}
             height={280}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            className={styles.photoImage}
             unoptimized
           />
         </div>
