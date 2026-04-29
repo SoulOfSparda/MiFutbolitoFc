@@ -180,7 +180,6 @@ function hasMinimumClues(player) {
 function looksLikeCoachOrStaff(player) {
   const position = (player?.strPosition || '').toLowerCase();
   const status = (player?.strStatus || '').toLowerCase();
-  const description = (player?.strDescriptionEN || '').toLowerCase();
   const name = (player?.strPlayer || '').toLowerCase();
 
   return (
@@ -192,10 +191,6 @@ function looksLikeCoachOrStaff(player) {
     position.includes('staff') ||
     status.includes('manager') ||
     status.includes('coach') ||
-    description.includes('head coach') ||
-    description.includes('assistant coach') ||
-    description.includes('football manager') ||
-    description.includes('manager of') ||
     name.includes(' coach') ||
     name.startsWith('coach ')
   );

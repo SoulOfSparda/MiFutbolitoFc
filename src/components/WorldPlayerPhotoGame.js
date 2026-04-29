@@ -153,7 +153,10 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
     const strictPlayers = normalized.filter(
       (profile) => !profile.isCoach && hasPlayerIdentitySignal(profile)
     );
+    const nonCoachPlayers = normalized.filter((profile) => !profile.isCoach);
 
+    if (strictPlayers.length >= 8) return strictPlayers;
+    if (nonCoachPlayers.length >= 4) return nonCoachPlayers;
     return strictPlayers;
   }, [players]);
 
