@@ -177,6 +177,30 @@ function hasMinimumClues(player) {
   return available >= 3;
 }
 
+function looksLikeCoachOrStaff(player) {
+  const position = (player?.strPosition || '').toLowerCase();
+  const status = (player?.strStatus || '').toLowerCase();
+  const description = (player?.strDescriptionEN || '').toLowerCase();
+  const name = (player?.strPlayer || '').toLowerCase();
+
+  return (
+    position.includes('manager') ||
+    position.includes('coach') ||
+    position.includes('assistant') ||
+    position.includes('trainer') ||
+    position.includes('director') ||
+    position.includes('staff') ||
+    status.includes('manager') ||
+    status.includes('coach') ||
+    description.includes('head coach') ||
+    description.includes('assistant coach') ||
+    description.includes('football manager') ||
+    description.includes('manager of') ||
+    name.includes(' coach') ||
+    name.startsWith('coach ')
+  );
+}
+
 function looksLikeNationalTeam(team) {
   const leaguesText = [team?.strLeague, team?.strLeague2, team?.strLeague3]
     .filter(Boolean)
@@ -279,6 +303,7 @@ export async function getWorldCupPlayers(teams = [], options = {}) {
   const requireMinimumClues = options.requireMinimumClues ?? true;
   const limit = options.limit ?? 220;
   const includeNameHints = options.includeNameHints ?? false;
+  const excludeCoachProfiles = options.excludeCoachProfiles ?? false;
   const maxNameHints = options.maxNameHints ?? 24;
   const numericTeamIds = teams
     .map((team) => String(team?.idTeam || ''))
@@ -297,7 +322,11 @@ export async function getWorldCupPlayers(teams = [], options = {}) {
     .filter((player) => player?.idPlayer && player?.strPlayer)
     .map(normalizeGamePlayer);
 
-  return mergeWorldCupPlayers(apiPlayers, WORLD_CUP_FALLBACK_PLAYERS, requireMinimumClues).slice(0, limit);
+  const merged = mergeWorldCupPlayers(apiPlayers, WORLD_CUP_FALLBACK_PLAYERS, requireMinimumClues);
+  const filtered = excludeCoachProfiles
+    ? merged.filter((player) => !looksLikeCoachOrStaff(player))
+    : merged;
+  return filtered.slice(0, limit);
 }
 
 // --- Standings ---

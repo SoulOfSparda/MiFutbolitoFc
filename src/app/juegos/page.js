@@ -70,6 +70,7 @@ export default async function JuegosPage() {
     getWorldCupPlayers(worldCupTeams, {
       requireMinimumClues: false,
       includeNameHints: true,
+      excludeCoachProfiles: true,
       maxNameHints: 24,
       limit: 600,
     }).catch(() => []),
