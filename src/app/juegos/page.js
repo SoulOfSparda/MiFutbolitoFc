@@ -80,7 +80,7 @@ function dedupePlayersByIdOrName(players) {
 }
 
 async function getChampionsPlayers(teams) {
-  const playerSourceTeams = teams.filter((team) => team.idTeam).slice(0, 8);
+  const playerSourceTeams = teams.filter((team) => team.idTeam).slice(0, 16);
   const playersNested = await Promise.all(
     playerSourceTeams.map((team) => getTeamPlayers(team.idTeam).catch(() => []))
   );
