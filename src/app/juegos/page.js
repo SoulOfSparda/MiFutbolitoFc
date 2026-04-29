@@ -55,6 +55,22 @@ function hasUsablePhoto(value) {
   return lower !== 'null' && lower !== 'undefined' && lower !== 'n/a';
 }
 
+function isGeneratedFallbackPlayer(player) {
+  return String(player?.idPlayer || '').startsWith('wc-p-');
+}
+
+function dedupePlayersByIdOrName(players) {
+  const seen = new Set();
+  return players.filter((player) => {
+    const id = String(player?.idPlayer || '').trim();
+    const name = String(player?.strPlayer || '').trim().toLowerCase();
+    const key = id || name;
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 async function getChampionsPlayers(teams) {
   const playerSourceTeams = teams.filter((team) => team.idTeam).slice(0, 8);
   const playersNested = await Promise.all(
@@ -84,10 +100,22 @@ export default async function JuegosPage() {
     }).catch(() => []),
   ]);
 
+  const realWorldCupPhotoPlayers = worldCupPhotoPlayers.filter(
+    (player) => hasUsablePhoto(player?.strThumb) && !isGeneratedFallbackPlayer(player)
+  );
+  const championsPhotoPlayers = championsPlayers.filter((player) => hasUsablePhoto(player?.strThumb));
+  const preferredPhotoPlayers = dedupePlayersByIdOrName([
+    ...realWorldCupPhotoPlayers,
+    ...championsPhotoPlayers,
+  ]);
+  const resolvedPhotoPlayers = preferredPhotoPlayers.length >= 4 ? preferredPhotoPlayers : worldCupPhotoPlayers;
+
   if (process.env.DEBUG_WORLD_CUP_PHOTOS === '1') {
     const totalWithPhoto = worldCupPhotoPlayers.filter((player) => hasUsablePhoto(player?.strThumb)).length;
+    const totalRealWorldCup = realWorldCupPhotoPlayers.length;
+    const totalChampionsPhotos = championsPhotoPlayers.length;
     console.info(
-      `[juegos] worldCupPhotoPlayers=${worldCupPhotoPlayers.length} withPhoto=${totalWithPhoto}`
+      `[juegos] worldCupPhotoPlayers=${worldCupPhotoPlayers.length} withPhoto=${totalWithPhoto} realWorldCup=${totalRealWorldCup} championsPhotos=${totalChampionsPhotos} resolved=${resolvedPhotoPlayers.length}`
     );
   }
 
@@ -99,7 +127,7 @@ export default async function JuegosPage() {
     'world-cup': {
       teams: worldCupTeams,
       players: worldCupPlayers,
-      photoPlayers: worldCupPhotoPlayers,
+      photoPlayers: resolvedPhotoPlayers,
     },
   };
 
