@@ -68,13 +68,15 @@ function isGeneratedFallbackPlayer(player) {
 }
 
 function dedupePlayersByIdOrName(players) {
-  const seen = new Set();
+  const seenNames = new Set();
+  const seenIds = new Set();
   return players.filter((player) => {
     const id = String(player?.idPlayer || '').trim();
     const name = normalizeSearchKey(player?.strPlayer);
-    const key = id || name;
-    if (!key || seen.has(key)) return false;
-    seen.add(key);
+    if (!id && !name) return false;
+    if ((name && seenNames.has(name)) || (id && seenIds.has(id))) return false;
+    if (name) seenNames.add(name);
+    if (id) seenIds.add(id);
     return true;
   });
 }

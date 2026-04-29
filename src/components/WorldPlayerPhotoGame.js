@@ -7,7 +7,6 @@ import { getGameMode, getModeLeaderboardId } from '@/lib/data/gameModes';
 import styles from './WorldPlayerPhotoGame.module.css';
 
 const START_LIVES = 3;
-const MIN_ROUNDS = 20;
 const MAX_ROUNDS = 50;
 const MAX_COACH_RATIO = 0.35;
 
@@ -29,6 +28,14 @@ function hasUsablePhoto(value) {
   if (!normalized) return false;
   const lower = normalized.toLowerCase();
   return lower !== 'null' && lower !== 'undefined' && lower !== 'n/a';
+}
+
+function normalizeSearchKey(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
 }
 
 function hasPlayerCoreSignals(player) {
@@ -125,15 +132,16 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
 
   const validPlayers = useMemo(() => {
     const source = Array.isArray(players) ? players : [];
-    const uniqueById = new Map();
+    const uniqueProfiles = new Map();
 
     source.forEach((player) => {
       const idPlayer = String(player?.idPlayer || '').trim();
       const strPlayer = (player?.strPlayer || '').trim();
       const strThumb = (player?.strThumb || '').trim();
       if (!idPlayer || !strPlayer || !hasUsablePhoto(strThumb)) return;
-      if (!uniqueById.has(idPlayer)) {
-        uniqueById.set(idPlayer, {
+      const key = normalizeSearchKey(strPlayer) || idPlayer;
+      if (!uniqueProfiles.has(key)) {
+        uniqueProfiles.set(key, {
           idPlayer,
           strPlayer,
           strThumb,
@@ -150,7 +158,7 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
       }
     });
 
-    const normalized = Array.from(uniqueById.values());
+    const normalized = Array.from(uniqueProfiles.values());
     const strictPlayers = normalized.filter(
       (profile) => !profile.isCoach && hasPlayerIdentitySignal(profile)
     );
@@ -171,7 +179,8 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
 
     const maxRounds = Math.min(
       MAX_ROUNDS,
-      Math.max(MIN_ROUNDS, Math.floor(validPlayers.length * 0.82))
+      validPlayers.length,
+      Math.max(8, Math.floor(validPlayers.length * 0.82))
     );
     const gameRounds = [];
     const coachPlayers = validPlayers.filter((player) => player.isCoach);
@@ -188,8 +197,7 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
         (player) => !usedCorrectIds.has(player.idPlayer)
       );
       if (availableCorrectPlayers.length === 0) {
-        usedCorrectIds.clear();
-        availableCorrectPlayers = [...validPlayers];
+        break;
       }
 
       let eligibleCorrectPlayers = availableCorrectPlayers;
