@@ -177,42 +177,44 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
   const generateRounds = useCallback(() => {
     if (validPlayers.length < 4) return [];
 
-    const maxRounds = Math.min(
-      MAX_ROUNDS,
-      validPlayers.length,
-      Math.max(8, Math.floor(validPlayers.length * 0.82))
-    );
+    const targetRounds = MAX_ROUNDS;
     const gameRounds = [];
     const coachPlayers = validPlayers.filter((player) => player.isCoach);
     const maxCoachRounds = Math.min(
-      coachPlayers.length > 0 ? Math.floor(maxRounds * MAX_COACH_RATIO) : 0,
-      Math.max(0, maxRounds - 1)
+      coachPlayers.length > 0 ? Math.floor(targetRounds * MAX_COACH_RATIO) : 0,
+      Math.max(0, targetRounds - 1)
     );
     let coachRounds = 0;
-    const usedCorrectIds = new Set();
+    let recentCorrectIds = [];
     let recentOptionIds = new Set();
+    const recentCorrectWindow = Math.min(6, Math.max(1, validPlayers.length - 1));
+    let unusedCorrectIds = new Set(validPlayers.map((player) => player.idPlayer));
 
-    for (let i = 0; i < maxRounds; i++) {
-      let availableCorrectPlayers = validPlayers.filter(
-        (player) => !usedCorrectIds.has(player.idPlayer)
-      );
-      if (availableCorrectPlayers.length === 0) {
-        break;
+    for (let i = 0; i < targetRounds; i++) {
+      if (unusedCorrectIds.size === 0) {
+        unusedCorrectIds = new Set(validPlayers.map((player) => player.idPlayer));
       }
 
-      let eligibleCorrectPlayers = availableCorrectPlayers;
+      let availableCorrectPlayers = validPlayers.filter((player) =>
+        unusedCorrectIds.has(player.idPlayer)
+      );
       if (coachRounds >= maxCoachRounds) {
         const nonCoachCandidates = availableCorrectPlayers.filter((player) => !player.isCoach);
         if (nonCoachCandidates.length > 0) {
-          eligibleCorrectPlayers = nonCoachCandidates;
+          availableCorrectPlayers = nonCoachCandidates;
         }
       }
 
-      const correctPlayer = pickRandomFrom(eligibleCorrectPlayers);
+      const nonRecentCorrectPlayers = availableCorrectPlayers.filter(
+        (player) => !recentCorrectIds.includes(player.idPlayer)
+      );
+      const correctSource =
+        nonRecentCorrectPlayers.length > 0 ? nonRecentCorrectPlayers : availableCorrectPlayers;
+      const correctPlayer = pickRandomFrom(correctSource);
       if (correctPlayer.isCoach) {
         coachRounds += 1;
       }
-      usedCorrectIds.add(correctPlayer.idPlayer);
+      unusedCorrectIds.delete(correctPlayer.idPlayer);
 
       const fullWrongPool = validPlayers.filter((player) => player.idPlayer !== correctPlayer.idPlayer);
       const preferredWrongPool = fullWrongPool.filter(
@@ -225,6 +227,7 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
 
       const options = shuffle([correctPlayer, ...wrongPlayers]);
       recentOptionIds = new Set(options.map((option) => option.idPlayer));
+      recentCorrectIds = [...recentCorrectIds, correctPlayer.idPlayer].slice(-recentCorrectWindow);
       gameRounds.push({
         correctPlayer,
         options,

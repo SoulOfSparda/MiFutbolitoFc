@@ -300,7 +300,7 @@ export async function getWorldCupPlayers(teams = [], options = {}) {
   const includeNameHints = options.includeNameHints ?? false;
   const excludeCoachProfiles = options.excludeCoachProfiles ?? false;
   const skipTeamLookups = options.skipTeamLookups ?? false;
-  const maxNameHints = options.maxNameHints ?? 24;
+  const maxNameHints = options.maxNameHints ?? WORLD_CUP_PLAYER_SEARCH_HINTS.length;
   const numericTeamIds = skipTeamLookups
     ? []
     : teams

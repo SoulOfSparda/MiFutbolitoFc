@@ -240,7 +240,76 @@ export const WORLD_CUP_PLAYER_SEARCH_HINTS = [
   'Dominik Szoboszlai',
 ];
 
-export const WORLD_CUP_FALLBACK_PLAYERS = [
+const WORLD_CUP_WIKIMEDIA_PHOTO_OVERRIDES = [
+  ['Lionel Messi', 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Lionel_Messi_White_House_2026_%283x4_cropped%29.jpg/330px-Lionel_Messi_White_House_2026_%283x4_cropped%29.jpg'],
+  ['Julian Alvarez', 'https://upload.wikimedia.org/wikipedia/commons/0/03/Argentina_national_football_team_-_2_-_2022_%28Juli%C3%A1n_%C3%81lvarez%29.jpg'],
+  ['Enzo Fernandez', 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Enzo_Fern%C3%A1ndez_2025_FIFA_Club_World_Cup_Final.jpg/330px-Enzo_Fern%C3%A1ndez_2025_FIFA_Club_World_Cup_Final.jpg'],
+  ['Emiliano Martinez', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/St._Louis_City_vs_Aston_Villa_%28Jul_2025%29_14_%28Emiliano_Mart%C3%ADnez%29.jpg/330px-St._Louis_City_vs_Aston_Villa_%28Jul_2025%29_14_%28Emiliano_Mart%C3%ADnez%29.jpg'],
+  ['Lautaro Martinez', 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Lautaro_Martinez_ARGENTINA_VS_VENEZUELA_2017.jpg/330px-Lautaro_Martinez_ARGENTINA_VS_VENEZUELA_2017.jpg'],
+  ['Alexis Mac Allister', 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Alexis_Mac_Allister_04012026_%281%29.jpg/330px-Alexis_Mac_Allister_04012026_%281%29.jpg'],
+  ['Nicolas Otamendi', 'https://upload.wikimedia.org/wikipedia/commons/d/de/Argentina_team_in_St._Petersburg_%28cropped%29_Otamendi.jpg'],
+  ['Vinicius Junior', 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/2023_05_06_Final_de_la_Copa_del_Rey_-_52879242230_%28cropped%29.jpg/330px-2023_05_06_Final_de_la_Copa_del_Rey_-_52879242230_%28cropped%29.jpg'],
+  ['Rodrygo', 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Rodrygo_2023_%28cropped%29.jpg/330px-Rodrygo_2023_%28cropped%29.jpg'],
+  ['Bruno Guimaraes', 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Bruno_Guimar%C3%A3es.png/330px-Bruno_Guimar%C3%A3es.png'],
+  ['Alisson Becker', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/20180610_FIFA_Friendly_Match_Austria_vs._Brazil_850_1625.jpg/330px-20180610_FIFA_Friendly_Match_Austria_vs._Brazil_850_1625.jpg'],
+  ['Marquinhos', 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/FC_Salzburg_gegen_Paris_Saint-Germain_UEFA_Champions_League_49_%28cropped%29.jpg/330px-FC_Salzburg_gegen_Paris_Saint-Germain_UEFA_Champions_League_49_%28cropped%29.jpg'],
+  ['Raphinha', 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Raphael_Dias_Belloli_2023.jpg/330px-Raphael_Dias_Belloli_2023.jpg'],
+  ['Gabriel Martinelli', 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/1_Gabriel_Martinelli_arsenal_2025_%28cropped%29.jpg/330px-1_Gabriel_Martinelli_arsenal_2025_%28cropped%29.jpg'],
+  ['Kylian Mbappe', 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Picture_with_Mbapp%C3%A9_%28cropped_and_rotated%29.jpg/330px-Picture_with_Mbapp%C3%A9_%28cropped_and_rotated%29.jpg'],
+  ['Antoine Griezmann', 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/FRA-ARG_%2810%29_%28cropped%29.jpg/330px-FRA-ARG_%2810%29_%28cropped%29.jpg'],
+  ['Aurelien Tchouameni', 'https://upload.wikimedia.org/wikipedia/commons/0/0f/2025_04_26_Final_de_la_Copa_del_Rey_-_Aur%C3%A9lien_Tchouam%C3%A9ni.jpg'],
+  ['Mike Maignan', 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Mike_Maignan_2022_Salzburg_vs_AC_Milan_2022-09-06.jpg/330px-Mike_Maignan_2022_Salzburg_vs_AC_Milan_2022-09-06.jpg'],
+  ['Ousmane Dembele', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Ousmane_Demb%C3%A9l%C3%A9_2018_%28cropped%29.jpg/330px-Ousmane_Demb%C3%A9l%C3%A9_2018_%28cropped%29.jpg'],
+  ['Theo Hernandez', 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/FC_Salzburg_vs._AC_Mailand_%28UEFA_Championsleague_2022-09-06%29_Th%C3%A9o_Hernandez.jpg/330px-FC_Salzburg_vs._AC_Mailand_%28UEFA_Championsleague_2022-09-06%29_Th%C3%A9o_Hernandez.jpg'],
+  ['William Saliba', 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/1_william_saliba_arsenal_2025_%28cropped%29.jpg/330px-1_william_saliba_arsenal_2025_%28cropped%29.jpg'],
+  ['Lamine Yamal', 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Lamine_Yamal_in_2025.jpg/330px-Lamine_Yamal_in_2025.jpg'],
+  ['Pedri', 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Pedri.jpg/330px-Pedri.jpg'],
+  ['Unai Simon', 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Unai_Sim%C3%B3n_2025_%28cropped%29.jpg/330px-Unai_Sim%C3%B3n_2025_%28cropped%29.jpg'],
+  ['Alvaro Morata', 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/%C3%81lvaro_Morata_in_2025.jpg/330px-%C3%81lvaro_Morata_in_2025.jpg'],
+  ['Nico Williams', 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/ATHLETIC-OSASUNA_SEMIFINAL._MAIDER_GOIKOETXEA_%28168%29_%28cropped%29.jpg/330px-ATHLETIC-OSASUNA_SEMIFINAL._MAIDER_GOIKOETXEA_%28168%29_%28cropped%29.jpg'],
+  ['Dani Carvajal', 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/UEFA_EURO_qualifiers_Sweden_vs_Spain_20191015_Dani_Carvajal_10_%28cropped%29.jpg/330px-UEFA_EURO_qualifiers_Sweden_vs_Spain_20191015_Dani_Carvajal_10_%28cropped%29.jpg'],
+  ['Jamal Musiala', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Jamal_Musiala_2022_%28cropped%29.jpg/330px-Jamal_Musiala_2022_%28cropped%29.jpg'],
+  ['Kai Havertz', 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/2019-06-11_Fu%C3%9Fball%2C_M%C3%A4nner%2C_L%C3%A4nderspiel%2C_Deutschland-Estland_StP_2059_LR10_by_Stepro.jpg/330px-2019-06-11_Fu%C3%9Fball%2C_M%C3%A4nner%2C_L%C3%A4nderspiel%2C_Deutschland-Estland_StP_2059_LR10_by_Stepro.jpg'],
+  ['Florian Wirtz', 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Florian_Wirtz_04012026_%283%29_%28extracted%29.jpg/330px-Florian_Wirtz_04012026_%283%29_%28extracted%29.jpg'],
+  ['Marc-Andre ter Stegen', 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Marc-Andre_Ter_Stegen_ACCI_FCBARCELONA_Turisme_Catalunya_gira_pretemporada_CATPRESS.jpg/330px-Marc-Andre_Ter_Stegen_ACCI_FCBARCELONA_Turisme_Catalunya_gira_pretemporada_CATPRESS.jpg'],
+  ['Joshua Kimmich', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/2019-06-11_Fu%C3%9Fball%2C_M%C3%A4nner%2C_L%C3%A4nderspiel%2C_Deutschland-Estland_StP_2078_LR10_by_Stepro_%28cropped%29.jpg/330px-2019-06-11_Fu%C3%9Fball%2C_M%C3%A4nner%2C_L%C3%A4nderspiel%2C_Deutschland-Estland_StP_2078_LR10_by_Stepro_%28cropped%29.jpg'],
+  ['Antonio Rudiger', 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/20180602_FIFA_Friendly_Match_Austria_vs._Germany_Antonio_R%C3%BCdiger_850_0711.jpg/330px-20180602_FIFA_Friendly_Match_Austria_vs._Germany_Antonio_R%C3%BCdiger_850_0711.jpg'],
+  ['Jude Bellingham', 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/25th_Laureus_World_Sports_Awards_-_Red_Carpet_-_Jude_Bellingham_-_240422_190551-2_%28cropped%29.jpg/330px-25th_Laureus_World_Sports_Awards_-_Red_Carpet_-_Jude_Bellingham_-_240422_190551-2_%28cropped%29.jpg'],
+  ['Harry Kane', 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Harry_Kane_on_October_10%2C_2023.jpg/330px-Harry_Kane_on_October_10%2C_2023.jpg'],
+  ['Bukayo Saka', 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/1_bukayo_saka_arsenal_2025_%28cropped%29.jpg/330px-1_bukayo_saka_arsenal_2025_%28cropped%29.jpg'],
+  ['Jordan Pickford', 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Jordan_Pickford_2022-07-16_1.jpg/330px-Jordan_Pickford_2022-07-16_1.jpg'],
+  ['Phil Foden', 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/2023-10-04_Fu%C3%9Fball%2C_M%C3%A4nner%2C_UEFA_Champions_League%2C_RB_Leipzig_-_Manchester_City_FC_1DX_2613%2C_Phil_Foden.jpg/330px-2023-10-04_Fu%C3%9Fball%2C_M%C3%A4nner%2C_UEFA_Champions_League%2C_RB_Leipzig_-_Manchester_City_FC_1DX_2613%2C_Phil_Foden.jpg'],
+  ['Declan Rice', 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/1_declan_rice_arsenal_2025_%28cropped%29.jpg/330px-1_declan_rice_arsenal_2025_%28cropped%29.jpg'],
+  ['Cole Palmer', 'https://upload.wikimedia.org/wikipedia/commons/f/fb/Cole_Palmer_2025_FIFA_Club_World_Cup_Final.jpg'],
+  ['Cristiano Ronaldo', 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/President_Donald_Trump_meets_with_Cristiano_Ronaldo_in_the_Oval_Office_%2854933344262%29_%28cropped_and_rotated%29.jpg/330px-President_Donald_Trump_meets_with_Cristiano_Ronaldo_in_the_Oval_Office_%2854933344262%29_%28cropped_and_rotated%29.jpg'],
+  ['Bruno Fernandes', 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Bruno_Fernandes_USMNT_v_Portugal_Mar_31_2026-27_%28cropped%29.jpg/330px-Bruno_Fernandes_USMNT_v_Portugal_Mar_31_2026-27_%28cropped%29.jpg'],
+  ['Rafael Leao', 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/RafaelLe%C3%A3oPortugal23.jpg/330px-RafaelLe%C3%A3oPortugal23.jpg'],
+  ['Diogo Costa', 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Portugal_national_football_team_0866_%28Diogo_Costa%29.jpg/330px-Portugal_national_football_team_0866_%28Diogo_Costa%29.jpg'],
+  ['Bernardo Silva', 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Bernardo_Silva_%28Isto_%C3%89_Gozar_Com_Quem_Trabalha%2C_2024%29.png/330px-Bernardo_Silva_%28Isto_%C3%89_Gozar_Com_Quem_Trabalha%2C_2024%29.png'],
+  ['Joao Cancelo', 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Jo%C3%A3o_Cancelo_USMNT_v_Portugal_Mar_31_2026-30_%28cropped%29.jpg/330px-Jo%C3%A3o_Cancelo_USMNT_v_Portugal_Mar_31_2026-30_%28cropped%29.jpg'],
+  ['Federico Valverde', 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Federico_Valverde_2021_%28cropped%29.jpg/330px-Federico_Valverde_2021_%28cropped%29.jpg'],
+  ['Darwin Nunez', 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Darwin_N%C3%BA%C3%B1ez_%28cropped%29.jpg/330px-Darwin_N%C3%BA%C3%B1ez_%28cropped%29.jpg'],
+  ['Ronald Araujo', 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/FC_Red_Bull_Salzburg_gegen_CF_Barcelona_%28Testspiel_4._August_2021%29_45_%28cropped%29.jpg/330px-FC_Red_Bull_Salzburg_gegen_CF_Barcelona_%28Testspiel_4._August_2021%29_45_%28cropped%29.jpg'],
+  ['Achraf Hakimi', 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Achraf_Hakimi_vs_Niger%2C_5_Sept_2025.jpg/330px-Achraf_Hakimi_vs_Niger%2C_5_Sept_2025.jpg'],
+  ['Sofyan Amrabat', 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Sofyan_Amrabat_vs_Niger_%28cropped%29.jpg/330px-Sofyan_Amrabat_vs_Niger_%28cropped%29.jpg'],
+  ['Youssef En-Nesyri', 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Ennesyri.jpg/330px-Ennesyri.jpg'],
+  ['Yassine Bounou', 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Yassine_Bono_%28cropped%29.jpg/330px-Yassine_Bono_%28cropped%29.jpg'],
+  ['Sergio Ramos', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Sergio_Ramos_Interview_2021_%28cropped%29.jpg/330px-Sergio_Ramos_Interview_2021_%28cropped%29.jpg'],
+  ['Adrien Rabiot', 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Rabiot_asse_om_2425.png/330px-Rabiot_asse_om_2425.png'],
+  ['Alphonso Davies', 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Alphonso_Davies_in_2022.jpg/330px-Alphonso_Davies_in_2022.jpg'],
+  ['Takefusa Kubo', 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Takefusa_Kubo_2019.png/330px-Takefusa_Kubo_2019.png'],
+  ['Mohamed Salah', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Mohamed_Salah_2018.jpg/330px-Mohamed_Salah_2018.jpg'],
+  ['Khvicha Kvaratskhelia', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Kvaratskhelia_asse_psg_2425.png/330px-Kvaratskhelia_asse_psg_2425.png'],
+  ['Rodri', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/RODRI_-_SWE_vs_ESP_-_UEFA_EURO_2020_QUALIFIERS_-_2019.10.15_%28cropped%29.jpg/330px-RODRI_-_SWE_vs_ESP_-_UEFA_EURO_2020_QUALIFIERS_-_2019.10.15_%28cropped%29.jpg'],
+  ['James Rodriguez', 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/James_Rodriguez_2018.jpg/330px-James_Rodriguez_2018.jpg'],
+  ['Santiago Gimenez', 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Santiago_Gim%C3%A9nez.png/330px-Santiago_Gim%C3%A9nez.png'],
+];
+
+const WORLD_CUP_WIKIMEDIA_PHOTOS_BY_NAME = new Map(
+  WORLD_CUP_WIKIMEDIA_PHOTO_OVERRIDES.map(([name, photo]) => [normalizeLookupKey(name), photo])
+);
+
+const WORLD_CUP_FALLBACK_PLAYER_BASE = [
   ['wc-p-001', 'Lionel Messi', 'Argentina', 'Argentina', 'Forward', '1987-06-24', '10'],
   ['wc-p-002', 'Julian Alvarez', 'Argentina', 'Argentina', 'Forward', '2000-01-31', '9'],
   ['wc-p-003', 'Enzo Fernandez', 'Argentina', 'Argentina', 'Midfielder', '2001-01-17', '8'],
@@ -281,8 +350,50 @@ export const WORLD_CUP_FALLBACK_PLAYERS = [
   ['wc-p-038', 'Sofyan Amrabat', 'Marruecos', 'Marruecos', 'Midfielder', '1996-08-21', '4'],
   ['wc-p-039', 'Youssef En-Nesyri', 'Marruecos', 'Marruecos', 'Forward', '1997-06-01', '19'],
   ['wc-p-040', 'Yassine Bounou', 'Marruecos', 'Marruecos', 'Goalkeeper', '1991-04-05', '1'],
+];
+
+const WORLD_CUP_FALLBACK_BASE_PLAYERS = WORLD_CUP_FALLBACK_PLAYER_BASE.map(
+  ([idPlayer, strPlayer, strTeam, strNationality, strPosition, dateBorn, strNumber]) => {
+    const overridePhoto = WORLD_CUP_WIKIMEDIA_PHOTOS_BY_NAME.get(normalizeLookupKey(strPlayer)) || '';
+    return {
+      idPlayer,
+      strPlayer,
+      strTeam,
+      strNationality,
+      strPosition,
+      dateBorn,
+      strNumber,
+      strHeight: '',
+      strWeight: '',
+      strThumb: overridePhoto || createFallbackPlayerPhoto(strPlayer, strTeam),
+    };
+  }
+);
+
+const BASE_PLAYER_NAMES = new Set(
+  WORLD_CUP_FALLBACK_PLAYER_BASE.map(([, strPlayer]) => normalizeLookupKey(strPlayer))
+);
+
+const WORLD_CUP_FALLBACK_EXTRA_PLAYERS = WORLD_CUP_WIKIMEDIA_PHOTO_OVERRIDES.filter(
+  ([name]) => !BASE_PLAYER_NAMES.has(normalizeLookupKey(name))
+).map(([strPlayer, strThumb], idx) => ({
+  idPlayer: `wc-x-${String(idx + 1).padStart(3, '0')}`,
+  strPlayer,
+  strTeam: 'Seleccion Nacional',
+  strNationality: '',
+  strPosition: 'Forward',
+  dateBorn: '',
+  strNumber: '',
+  strHeight: '',
+  strWeight: '',
+  strThumb,
+}));
+
+export const WORLD_CUP_FALLBACK_PLAYERS = [
+  ...WORLD_CUP_FALLBACK_BASE_PLAYERS,
+  ...WORLD_CUP_FALLBACK_EXTRA_PLAYERS,
 ].map(
-  ([idPlayer, strPlayer, strTeam, strNationality, strPosition, dateBorn, strNumber]) => ({
+  ({ idPlayer, strPlayer, strTeam, strNationality, strPosition, dateBorn, strNumber, strHeight, strWeight, strThumb }) => ({
     idPlayer,
     strPlayer,
     strTeam,
@@ -290,9 +401,9 @@ export const WORLD_CUP_FALLBACK_PLAYERS = [
     strPosition,
     dateBorn,
     strNumber,
-    strHeight: '',
-    strWeight: '',
-    strThumb: createFallbackPlayerPhoto(strPlayer, strTeam),
+    strHeight,
+    strWeight,
+    strThumb,
   })
 );
 

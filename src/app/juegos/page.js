@@ -8,6 +8,8 @@ import { connection } from 'next/server';
 import GamesClient from './GamesClient';
 import styles from './page.module.css';
 
+const PHOTO_GAME_TARGET_ROUNDS = 50;
+
 export const metadata = {
   title: 'Juegos — MiFutbolitoFc',
   description:
@@ -64,7 +66,8 @@ function normalizeSearchKey(value) {
 }
 
 function isGeneratedFallbackPlayer(player) {
-  return String(player?.idPlayer || '').startsWith('wc-p-');
+  const thumb = String(player?.strThumb || '').trim().toLowerCase();
+  return thumb.startsWith('data:image/svg+xml');
 }
 
 function dedupePlayersByIdOrName(players) {
@@ -105,7 +108,6 @@ export default async function JuegosPage() {
       includeNameHints: true,
       excludeCoachProfiles: false,
       skipTeamLookups: true,
-      maxNameHints: 24,
       limit: 600,
     }).catch(() => []),
   ]);
@@ -124,7 +126,13 @@ export default async function JuegosPage() {
     ...realWorldCupPhotoPlayers,
     ...championsWorldCupPhotoPlayers,
   ]);
-  const resolvedPhotoPlayers = preferredPhotoPlayers.length >= 4 ? preferredPhotoPlayers : worldCupPhotoPlayers;
+  const playersWithAnyPhoto = dedupePlayersByIdOrName(
+    worldCupPhotoPlayers.filter((player) => hasUsablePhoto(player?.strThumb))
+  );
+  const resolvedPhotoPlayers =
+    preferredPhotoPlayers.length >= PHOTO_GAME_TARGET_ROUNDS
+      ? preferredPhotoPlayers
+      : playersWithAnyPhoto;
 
   if (process.env.DEBUG_WORLD_CUP_PHOTOS === '1') {
     const totalWithPhoto = worldCupPhotoPlayers.filter((player) => hasUsablePhoto(player?.strThumb)).length;
