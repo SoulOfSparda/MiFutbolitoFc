@@ -93,7 +93,7 @@ export default async function JuegosPage() {
     getWorldCupPlayers(worldCupTeams, {
       requireMinimumClues: false,
       includeNameHints: true,
-      excludeCoachProfiles: true,
+      excludeCoachProfiles: false,
       skipTeamLookups: true,
       maxNameHints: 24,
       limit: 600,

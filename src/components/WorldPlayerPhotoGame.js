@@ -9,6 +9,7 @@ import styles from './WorldPlayerPhotoGame.module.css';
 const START_LIVES = 3;
 const MIN_ROUNDS = 20;
 const MAX_ROUNDS = 50;
+const MAX_COACH_RATIO = 0.35;
 
 function shuffle(arr) {
   const copy = [...arr];
@@ -154,10 +155,15 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
       (profile) => !profile.isCoach && hasPlayerIdentitySignal(profile)
     );
     const nonCoachPlayers = normalized.filter((profile) => !profile.isCoach);
+    const coachProfiles = normalized.filter((profile) => profile.isCoach);
+    const playerPool = strictPlayers.length >= 8 ? strictPlayers : nonCoachPlayers;
 
-    if (strictPlayers.length >= 8) return strictPlayers;
-    if (nonCoachPlayers.length >= 4) return nonCoachPlayers;
-    return strictPlayers;
+    if (playerPool.length < 4) return playerPool;
+
+    // Permitimos entrenadores, pero sin superar la cantidad de jugadores.
+    const maxCoachesInPool = Math.min(coachProfiles.length, Math.max(0, playerPool.length - 1));
+    const limitedCoaches = coachProfiles.slice(0, maxCoachesInPool);
+    return [...playerPool, ...limitedCoaches];
   }, [players]);
 
   const generateRounds = useCallback(() => {
@@ -168,6 +174,12 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
       Math.max(MIN_ROUNDS, Math.floor(validPlayers.length * 0.82))
     );
     const gameRounds = [];
+    const coachPlayers = validPlayers.filter((player) => player.isCoach);
+    const maxCoachRounds = Math.min(
+      coachPlayers.length > 0 ? Math.floor(maxRounds * MAX_COACH_RATIO) : 0,
+      Math.max(0, maxRounds - 1)
+    );
+    let coachRounds = 0;
     const usedCorrectIds = new Set();
     let recentOptionIds = new Set();
 
@@ -180,7 +192,18 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
         availableCorrectPlayers = [...validPlayers];
       }
 
-      const correctPlayer = pickRandomFrom(availableCorrectPlayers);
+      let eligibleCorrectPlayers = availableCorrectPlayers;
+      if (coachRounds >= maxCoachRounds) {
+        const nonCoachCandidates = availableCorrectPlayers.filter((player) => !player.isCoach);
+        if (nonCoachCandidates.length > 0) {
+          eligibleCorrectPlayers = nonCoachCandidates;
+        }
+      }
+
+      const correctPlayer = pickRandomFrom(eligibleCorrectPlayers);
+      if (correctPlayer.isCoach) {
+        coachRounds += 1;
+      }
       usedCorrectIds.add(correctPlayer.idPlayer);
 
       const fullWrongPool = validPlayers.filter((player) => player.idPlayer !== correctPlayer.idPlayer);
@@ -258,7 +281,7 @@ export default function WorldPlayerPhotoGame({ players, mode = 'world-cup' }) {
   if (validPlayers.length < 4) {
     return (
       <p style={{ color: 'var(--text-muted)', textAlign: 'center' }}>
-        No hay suficientes jugadores con imagen disponible por ahora. Intenta mas tarde.
+        No hay suficientes jugadores o entrenadores con imagen disponible por ahora. Intenta mas tarde.
       </p>
     );
   }
