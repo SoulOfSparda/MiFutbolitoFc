@@ -1,3 +1,4 @@
+// Modo de juego por defecto: Mundial 2026
 export const DEFAULT_GAME_MODE = 'world-cup';
 
 export const GAME_MODES = {
