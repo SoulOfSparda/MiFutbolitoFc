@@ -1,4 +1,4 @@
-export const DEFAULT_GAME_MODE = 'champions';
+export const DEFAULT_GAME_MODE = 'world-cup';
 
 export const GAME_MODES = {
   champions: {
