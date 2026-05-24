@@ -1,41 +1,58 @@
 # ⚽ MiFutbolitoFc
 
-Una aplicación web moderna para seguir las mejores ligas de fútbol, consultar resultados, próximos partidos, tablas de posiciones y biografías de jugadores.
+**MiFutbolitoFc** es una aplicación web moderna diseñada para que sigas de cerca las mejores ligas de fútbol. Consulta resultados, próximos partidos, tablas de posiciones y biografías detalladas de jugadores en tiempo real.
 
-Este proyecto extrae información en tiempo real desde [TheSportsDB](https://www.thesportsdb.com/) y cuenta con un sistema inteligente de "autotraducción" mediante Google Translate, para que disfrutes de toda la información de Europa y Colombia en Español.
+Este proyecto extrae información desde [TheSportsDB](https://www.thesportsdb.com/) y cuenta con un sistema inteligente de "autotraducción" mediante Google Translate, para que disfrutes de toda la información de Europa y Colombia en Español.
 
-## 🚀 Características Principales
+---
 
-- **Resultados y Próximos Partidos**: Fechas, encuentros y resúmenes de la Champions League, Premier League y Liga BetPlay (Apertura y Finalización).
-- **Tablas de Posiciones Dinámicas**: Lógica personalizada capaz de armar tablas de 36 equipos para formatos liguilla (como Champions League).
-- **Fase Eliminatoria Interactiva (Bracket)**: Vista de llaves (Playoffs, Octavos, Cuartos) generada y estructurada dinámicamente con agregación de marcadores.
-- **Zona de Minijuegos Gamificada 🎮**: 
-  - *Maestro de Champions*: Trivia histórica con ranking de puntaje basado en rachas.
-  - *Adivina el Escudo*: Desafío contra reloj tipo silueta usando filtros avanzados para adivinar el club.
-  - *Adivina el Jugador por Pistas*: Reto de deducción con pistas progresivas (posición, nacionalidad, club y más), donde usar menos pistas da más puntos.
-- **Detalle de Equipos**: Descripciones dinámicas en español, escudos, uniformes e información de fundación.
-- **Biografía de Jugadores**: Fotografía, dorsal, equipo y detalles físicos de los jugadores de cada equipo.
-- **Horarios Locales**: El código lee automáticamente la zona horaria de tu computadora para que los partidos se muestren en tu hora local.
-- **Buscador de Equipos Global**: Capacidad anti-error 404 usando fallbacks con listados de plantillas o últimos partidos para encontrar a cualquier escuadra mundial.
+## ✨ Características Principales
 
-## 🛠 Instalación y Uso Local
+- 📅 **Resultados y Próximos Partidos:** Información actualizada de la Champions League, Premier League y Liga BetPlay (Apertura y Finalización).
+- 📊 **Tablas Dinámicas:** Capacidad para armar tablas de 36 equipos con lógica personalizada (formato liguilla tipo Champions).
+- 🏆 **Fase Eliminatoria (Bracket):** Vista interactiva de llaves (Playoffs, Octavos, Cuartos) generada dinámicamente con agregación de marcadores.
+- 🎮 **Minijuegos Gamificados:**
+  - *Maestro de Champions:* Trivia histórica con rachas.
+  - *Adivina el Escudo:* Desafío contrarreloj para identificar clubes por silueta.
+  - *Adivina el Jugador:* Reto de deducción con pistas progresivas (nacionalidad, club, etc.).
+- ℹ️ **Detalle de Equipos y Jugadores:** Biografías, uniformes e información histórica de fundación.
+- 🕒 **Horarios Locales:** Adaptación automática a tu zona horaria para los partidos.
+- 🔍 **Buscador Global:** Capacidad anti-error 404 usando fallbacks con listados de plantillas o últimos partidos para encontrar a cualquier escuadra mundial.
 
-Este es un proyecto construido con [Next.js](https://nextjs.org) (App Router). 
+---
 
-Para comenzar el servidor de desarrollo localmente:
+## 💻 Stack Tecnológico
 
-1. Clona el repositorio e instala las dependencias:
-```bash
-npm install
-```
+- **Framework:** Next.js (App Router)
+- **Base de Datos:** Neon (Serverless Postgres)
+- **UI:** React
+- **Datos:** [TheSportsDB](https://www.thesportsdb.com/) API
+- **Despliegue:** Vercel
 
-2. Corre el servidor de desarrollo:
-```bash
-npm run dev
-```
+---
 
-3. Abre [http://localhost:3000](http://localhost:3000) en tu navegador preferido.
+## 🚀 Instalación y Uso Local
 
-## 🌍 Despliegue en Vercel
+1. **Clona el repositorio:**
+   ```bash
+   git clone https://github.com/SoulOfSparda/MiFutbolitoFc.git
+   cd mi-app-futbol
+   ```
 
-MiFutbolitoFc está optimizado para funcionar y compilarse directamente en Vercel. Sólo requieres enlazar este repositorio apuntando las configuraciones estándar de Next.js y Vercel se encargará del resto de manera automática.
+2. **Instala las dependencias:**
+   ```bash
+   npm install
+   ```
+
+3. **Inicia el servidor de desarrollo:**
+   ```bash
+   npm run dev
+   ```
+
+4. Abre [http://localhost:3000](http://localhost:3000) en tu navegador preferido.
+
+---
+
+## 🌍 Despliegue
+
+MiFutbolitoFc está optimizado para funcionar y compilarse directamente en Vercel. Sólo requieres enlazar el repositorio apuntando las configuraciones estándar de Next.js.
